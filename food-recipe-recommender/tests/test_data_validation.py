@@ -1,3 +1,5 @@
+"""Module Imports"""
+
 import pandas as pd
 import pytest
 
@@ -9,6 +11,10 @@ def load_data():
     return recipes, interactions
 
 def test_no_missing_values(load_data):
+    """
+    Test to make sure there are no missing values
+    """
+
     recipes, interactions = load_data
 
     # Drop missing values in recipes
@@ -21,18 +27,15 @@ def test_no_missing_values(load_data):
     assert recipes.isnull().sum().sum() == 0, "Recipes dataset contains missing values."
     assert interactions.isnull().sum().sum() == 0, "Interactions dataset contains missing values."
 
-
-
-
-
 def test_no_duplicates(load_data):
+    """Test that there are no duplicates"""
     recipes, interactions = load_data
     assert recipes.duplicated().sum() == 0, "Recipes dataset contains duplicates."
     assert interactions.duplicated().sum() == 0, "Interactions dataset contains duplicates."
 
 def test_column_types(load_data):
+    """Test that the expected columns are available"""
     recipes, _ = load_data
     expected_columns = ['minutes', 'n_steps', 'n_ingredients']
     for col in expected_columns:
         assert col in recipes.columns, f"Column {col} is missing from the recipes dataset."
-

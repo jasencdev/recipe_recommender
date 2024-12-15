@@ -13,7 +13,7 @@ def run_tests():
 def lint_code():
     """Lint code using pylint."""
     print("Linting code with pylint...")
-    result = subprocess.run(['pylint', 'src', 'tests'], check=False)
+    result = subprocess.run(['pylint', 'food-recipe-recommender/src', 'food-recipe-recommender/tests'], check=False)
     return result.returncode
 
 def clean():

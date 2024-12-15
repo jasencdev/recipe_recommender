@@ -1,11 +1,15 @@
+"""Module Imports"""
+
+import os
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import seaborn as sns
 from wordcloud import WordCloud
-import os
+
 
 def load_data():
+    '''Module for loading data'''
+
     # Build the absolute file path
     base_dir = os.path.dirname(os.path.abspath(__file__))
     recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
@@ -14,11 +18,13 @@ def load_data():
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
     interactions = pd.read_csv(interactions_data_path)
-    
+
     return recipes, interactions
 
 def summary_data(recipes, interactions):
-# Display initial rows
+    '''summarize the data for humans'''
+
+    # Display initial rows
     print(recipes.head())
     print(interactions.head())
 
@@ -35,9 +41,11 @@ def summary_data(recipes, interactions):
     print(interactions.isnull().sum())
 
 def preprocess_data(recipes, interactions):
+    '''Clean up the data for useability'''
+
     # Drop missing values in recipes
     recipes_cleaned_na = recipes.dropna()
-    
+
     # Drop recipes with preparation times over 180 minutes
     recipes_cleaned = recipes[recipes['minutes'] <= 180]
     print(f"Original dataset size: {recipes_cleaned_na.shape[0]} recipes")
@@ -49,13 +57,16 @@ def preprocess_data(recipes, interactions):
     return recipes_cleaned, interactions
 
 def plot_preparation_time(recipes):
-    # Plot histogram of preparation time
+    """
+    Plots histogram of preparation time
+    """
+
     plt.hist(recipes['minutes'], bins=50, edgecolor='blue')
     plt.title('Distribution of Preparation Time (minutes)')
     plt.xlabel('Preparation Time (minutes)')
     plt.ylabel('Frequency')
     plt.show()
-    
+
 def plot_ratings_distribution(interactions):
     """
     Plots the distribution of ratings for recipes.
@@ -66,7 +77,7 @@ def plot_ratings_distribution(interactions):
     plt.ylabel('Frequency')
     plt.xticks(range(1, 6))
     plt.show()
-    
+
 def plot_ingredients_distribution(recipes):
     """
     Plots the histogram of the number of ingredients in recipes.
@@ -76,7 +87,7 @@ def plot_ingredients_distribution(recipes):
     plt.xlabel('Number of Ingredients')
     plt.ylabel('Frequency')
     plt.show()
-    
+
 def plot_correlation_heatmap(recipes):
     """
     Plots a heatmap showing correlations between numeric features.
@@ -101,21 +112,3 @@ def plot_review_sentiment(interactions):
     plt.axis('off')
     plt.title('Word Cloud of Recipe Reviews')
     plt.show()
-
-# if __name__ == "__main__":
-#     # Load datasets
-#     data = load_data()
-    
-#     recipes = data[0]
-#     interactions = data[1]
-
-#     summary_data(recipes, interactions)
-#     cleaned_data = preprocess_data(recipes, interactions)
-#     recipes_filtered = cleaned_data[0]
-
-#     # Generate visualizations
-#     plot_preparation_time(recipes_filtered)
-#     plot_ratings_distribution(interactions)
-#     plot_ingredients_distribution(recipes_filtered)
-#     plot_correlation_heatmap(recipes_filtered)
-#     plot_review_sentiment(interactions)

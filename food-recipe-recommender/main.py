@@ -20,4 +20,4 @@ if __name__ == "__main__":
     plot_ratings_distribution(interactions)
     plot_ingredients_distribution(recipes_filtered)
     plot_correlation_heatmap(recipes_filtered)
-    # plot_review_sentiment(interactions)
+    plot_review_sentiment(interactions)

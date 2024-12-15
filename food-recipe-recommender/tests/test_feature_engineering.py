@@ -1,3 +1,5 @@
+"""Module Imports"""
+
 import pandas as pd
 import pytest
 
@@ -7,11 +9,17 @@ def load_recipes():
     return pd.read_csv('food-recipe-recommender/data/RAW_recipes.csv')
 
 def test_ingredient_count(load_recipes):
+    """
+    Ensure all recipes have positive ingredient counts.
+    """
     recipes = load_recipes
     # Example: Check if the number of ingredients is non-negative
     assert (recipes['n_ingredients'] >= 0).all(), "Some recipes have negative ingredient counts."
 
 def test_feature_creation(load_recipes):
+    """
+    Test whether features can be created.
+    """
     recipes = load_recipes
     recipes['complexity_score'] = recipes['n_ingredients'] * recipes['n_steps']
 
