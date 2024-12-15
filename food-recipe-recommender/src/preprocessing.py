@@ -102,20 +102,20 @@ def plot_review_sentiment(interactions):
     plt.title('Word Cloud of Recipe Reviews')
     plt.show()
 
-if __name__ == "__main__":
-    # Load datasets
-    data = load_data()
+# if __name__ == "__main__":
+#     # Load datasets
+#     data = load_data()
     
-    recipes = data[0]
-    interactions = data[1]
+#     recipes = data[0]
+#     interactions = data[1]
 
-    summary_data(recipes, interactions)
-    cleaned_data = preprocess_data(recipes, interactions)
-    recipes_filtered = cleaned_data[0]
+#     summary_data(recipes, interactions)
+#     cleaned_data = preprocess_data(recipes, interactions)
+#     recipes_filtered = cleaned_data[0]
 
-    # Generate visualizations
-    plot_preparation_time(recipes_filtered)
-    plot_ratings_distribution(interactions)
-    plot_ingredients_distribution(recipes_filtered)
-    plot_correlation_heatmap(recipes_filtered)
-    plot_review_sentiment(interactions)
+#     # Generate visualizations
+#     plot_preparation_time(recipes_filtered)
+#     plot_ratings_distribution(interactions)
+#     plot_ingredients_distribution(recipes_filtered)
+#     plot_correlation_heatmap(recipes_filtered)
+#     plot_review_sentiment(interactions)
