@@ -19,15 +19,16 @@ def test_model_accuracy(load_data):
     Test for Model Accuracy to be at least 80%.
     """
     data = load_data
-    x = data[['minutes', 'n_steps', 'n_ingredients']]  # Example features
+    X = data[['minutes', 'n_steps', 'n_ingredients']]  # Example features
     y = (data['rating'] >= 4).astype(int)  # Binary classification: high rating or not
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     model = RandomForestClassifier()
-    model.fit(x_train, y_train)
-    predictions = model.predict(x_test)
+    model.fit(X_train, y_train)
+    predictions = model.predict(X_test)
 
     # Test: Ensure model accuracy is above 80%
     accuracy = accuracy_score(y_test, predictions)
+    print(accuracy)
     assert accuracy > 0.8, f"Model accuracy is too low: {accuracy:.2f}"

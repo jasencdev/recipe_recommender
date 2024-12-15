@@ -6,6 +6,9 @@ import pandas as pd
 import seaborn as sns
 from wordcloud import WordCloud
 
+###########################
+# Exploratory Data Analysis
+###########################
 
 def load_data():
     '''Module for loading data'''
@@ -112,3 +115,5 @@ def plot_review_sentiment(interactions):
     plt.axis('off')
     plt.title('Word Cloud of Recipe Reviews')
     plt.show()
+
+
