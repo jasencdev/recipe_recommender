@@ -15,8 +15,14 @@ def load_data():
 
     # Build the absolute file path
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
-    interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
+    
+    # For Unix
+    # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
+    # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
+    
+    # For Windows
+    recipes_data_path = os.path.join(base_dir, 'data\RAW_recipes.csv')
+    interactions_data_path = os.path.join(base_dir, 'data\RAW_interactions.csv')
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)

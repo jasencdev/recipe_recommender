@@ -1,11 +1,11 @@
 from src.preprocessing import (
     load_data,
     preprocess_data,
-    #plot_preparation_time,
-    #plot_ratings_distribution,
-    #plot_ingredients_distribution,
-    #plot_correlation_heatmap,
-    #plot_review_sentiment
+    plot_preparation_time,
+    plot_ratings_distribution,
+    plot_ingredients_distribution,
+    plot_correlation_heatmap,
+    plot_review_sentiment
 )
 from src.preprocessing import load_data, preprocess_data
 from src.feature_engineering import engineer_features
@@ -31,11 +31,11 @@ if __name__ == "__main__":
     ###########################
 
     # Generate visualizations
-    #plot_preparation_time(recipes_filtered)
-    #plot_ratings_distribution(interactions)
-    #plot_ingredients_distribution(recipes_filtered)
-    #plot_correlation_heatmap(recipes_filtered)
-    #plot_review_sentiment(interactions)
+    plot_preparation_time(recipes_filtered)
+    plot_ratings_distribution(interactions)
+    plot_ingredients_distribution(recipes_filtered)
+    plot_correlation_heatmap(recipes_filtered)
+    plot_review_sentiment(interactions)
 
     ###########################
     # Feature Engineering
