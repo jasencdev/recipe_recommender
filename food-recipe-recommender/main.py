@@ -9,7 +9,7 @@ from src.preprocessing import (
 )
 from src.feature_engineering import engineer_features
 from src.feature_selection import select_features
-from src.modeling import train_test_split_data, train_model, evaluate_model
+from src.modeling import create_recommendation_label, train_test_split_data, train_model, evaluate_model
 from src.validation_checks import (
     check_class_distribution,
     check_data_leakage,
@@ -36,19 +36,23 @@ if __name__ == "__main__":
     # Exploratory Data Analysis
     ###########################
 
-    # Generate visualizations
-    plot_preparation_time(recipes_filtered)
-    plot_ratings_distribution(interactions)
-    plot_ingredients_distribution(recipes_filtered)
-    plot_correlation_heatmap(recipes_filtered)
-    plot_review_sentiment(interactions)
+    # # Generate visualizations
+    # plot_preparation_time(recipes_filtered)
+    # plot_ratings_distribution(interactions)
+    # plot_ingredients_distribution(recipes_filtered)
+    # plot_correlation_heatmap(recipes_filtered)
+    # plot_review_sentiment(interactions)
 
     ###########################
     # Feature Engineering
     ###########################
 
+    # For demonstration, you may optionally define user ingredients.
+    # For example: user_ingredients = ['tomato', 'basil', 'garlic']
+    user_ingredients = None  # Replace with a list of ingredients as needed
+
     # Generate new features
-    recipes, interactions = engineer_features(recipes_filtered, interactions)
+    recipes, interactions = engineer_features(recipes_filtered, interactions, user_ingredients=user_ingredients)
 
     ###########################
     # Feature Selection
@@ -63,10 +67,10 @@ if __name__ == "__main__":
     # Load Selected Features
     ###########################
 
-    # Load the saved feature set and create binary target
+    # Load the saved feature set and create binary target based on ingredient match
     selected_features = pd.read_csv("selected_features.csv")
-    selected_features['rating_binary'] = (selected_features['avg_rating'] >= 4.0).astype(int)
-    target_column = 'rating_binary'
+    selected_features = create_recommendation_label(selected_features)  # creates a 'recommended' column
+    target_column = 'recommended'
 
     ###########################
     # Split Data for Modeling

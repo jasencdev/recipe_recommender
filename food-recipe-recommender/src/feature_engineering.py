@@ -1,31 +1,33 @@
 """Feature Engineering"""
 
-def engineer_features(recipes, interactions):
+def engineer_features(recipes, interactions, user_ingredients=None):
     """
-    Create new features for the dataset.
+    Create new features for the dataset based on user's ingredients.
+    
     Args:
         recipes: DataFrame containing recipes data.
-        interactions: DataFrame containing user interactions data.
+                 Assumes a column 'ingredients' with comma-separated ingredient names.
+        interactions: DataFrame containing user interactions data. (Not used in the new logic)
+        user_ingredients: A set (or list) of ingredients provided by the user.
+    
     Returns:
-        recipes: DataFrame with new features added.
-        interactions: DataFrame with any processed features.
+        recipes: DataFrame with new features added, including the ingredient match score.
+        interactions: Unchanged DataFrame with interactions.
     """
-    # Example: Average rating per recipe
-    recipe_avg_rating = interactions.groupby('recipe_id')['rating'].mean().reset_index()
-    recipe_avg_rating.rename(columns={'rating': 'avg_rating'}, inplace=True)
-    recipes = recipes.merge(recipe_avg_rating, left_on='id', right_on='recipe_id', how='left')
+    if user_ingredients is not None:
+        # Convert user ingredients to a set for faster lookup.
+        user_set = set([ing.strip().lower() for ing in user_ingredients])
+        
+        def compute_match(recipe_ingredients):
+            # Assume each recipe's ingredients are comma-separated
+            recipe_set = set([ing.strip().lower() for ing in recipe_ingredients.split(",")])
+            common = recipe_set.intersection(user_set)
+            return len(common) / len(user_set) if user_set else 0
+        
+        recipes['ingredient_match_score'] = recipes['ingredients'].apply(compute_match)
     
-    # Example: Count of user interactions per recipe
-    recipe_interaction_count = interactions.groupby('recipe_id').size().reset_index(name='num_interactions')
-    recipes = recipes.merge(recipe_interaction_count, left_on='id', right_on='recipe_id', how='left')
-    
-    # Fill missing values (e.g., recipes with no interactions)
-    # Instead of using inplace=True, reassign the column after applying fillna
-    recipes['avg_rating'] = recipes['avg_rating'].fillna(0)
-    recipes['num_interactions'] = recipes['num_interactions'].fillna(0)
-
-    
-    # Example: Complexity score (derived feature)
-    recipes['complexity_score'] = recipes['n_steps'] * recipes['n_ingredients']
+    # Remove features not used anymore (e.g. rating-based features) or keep them if needed.
+    # For example, you can drop the columns added previously:
+    # recipes.drop(columns=['avg_rating', 'num_interactions', 'complexity_score'], errors='ignore', inplace=True)
     
     return recipes, interactions
