@@ -32,31 +32,14 @@ curl -L -o ~/Downloads/recipe-recommender-data.zip\
 
 Unzip the file downloaded to your downloads file and move the extracted `recipe-recommender-data` to `data` folder under `src`. Note: Running the next code block will download the zip file.
 
-## Then let's import the data
-
-Note: You should check `food-recipe-recommender/src/preprocessing.py` to make sure the right file paths are set based on your system.
-
-```python
-def load_data():
-    '''Module for loading data'''
-
-    # Build the absolute file path
-    base_dir = Path.cwd()
-
-    # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
-    # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    recipes_data_path = (base_dir / 'data' / 'RAW_recipes.csv').resolve()
-    interactions_data_path = (base_dir / 'data' / 'RAW_interactions.csv').resolve()
-
-    # Load the dataset
-    recipes = pd.read_csv(recipes_data_path)
-    interactions = pd.read_csv(interactions_data_path)
-
-    return recipes, interactions
-```
-
 ## Run the model
 
+You can run this locally in two different ways. 
+
+1. Run an interactive version using Steamlit
+`steamlit run food-recipe-recommender/app.py` 
+
+2. Running the model through terminal 
 `python food-recipe-recommender/main.py`
 
 ## Get the outputs/see the images
