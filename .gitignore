@@ -2,3 +2,5 @@
 food-recipe-recommender/data/
 food-recipe-recommender\data\
 __pycache__
+.mypy_cache
+.pytest_cache

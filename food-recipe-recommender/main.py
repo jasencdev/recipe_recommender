@@ -7,7 +7,6 @@ from src.preprocessing import (
     plot_correlation_heatmap,
     plot_review_sentiment
 )
-from src.preprocessing import load_data, preprocess_data
 from src.feature_engineering import engineer_features
 from src.feature_selection import select_features
 from src.modeling import train_test_split_data, train_model, evaluate_model
