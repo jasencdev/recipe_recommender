@@ -44,11 +44,10 @@ def get_data():
 
 st.sidebar.header("1. Load and Preprocess Data")
 if st.sidebar.button("Load Data"):
-    with st.spinner("Loading data..."):
-        recipes_filtered, interactions = get_data()  # Uses cached function
-        st.session_state["recipes_filtered"] = recipes_filtered
-        st.session_state["interactions"] = interactions
-        st.success(f"Data loaded: {len(recipes_filtered)} recipes")
+    recipes_filtered, interactions = get_data()  # Uses cached function
+    st.session_state["recipes_filtered"] = recipes_filtered
+    st.session_state["interactions"] = interactions
+    st.success(f"Data loaded: {len(recipes_filtered)} recipes")
     progress_bar.progress(20)
 
 # =============================================================================
