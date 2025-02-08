@@ -1,6 +1,6 @@
 from src.preprocessing import load_data, summary_data, preprocess_data, plot_prep_time_vs_ingredients, plot_most_used_ingredients
 from src.feature_selection import select_features
-from src.feature_engineering import encode_ingredients, normalize_numerical_features
+from src.feature_engineering import encode_ingredients, normalize_numerical_features, sanity_check
 
 def main():
     # Load the dataset
@@ -39,6 +39,9 @@ def main():
 
     print("Normalized Features Sample:")
     print(normalized_features[:5])
+
+    # Sanity check
+    sanity_check(selected_features, ingredient_matrix, normalized_features)
     
 
 if __name__ == "__main__":

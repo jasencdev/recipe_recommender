@@ -95,3 +95,5 @@ def sanity_check(recipes, ingredient_matrix, normalized_features):
     plt.show()
 
     print("\nSanity Check Completed\n")
+
+    return recipes, ingredient_matrix, normalized_features
