@@ -10,6 +10,13 @@ from src.preprocessing import (
 from src.feature_engineering import engineer_features
 from src.feature_selection import select_features
 from src.modeling import train_test_split_data, train_model, evaluate_model
+from src.validation_checks import (
+    check_class_distribution,
+    check_data_leakage,
+    inspect_feature_correlations,
+    cross_validate_model,
+    manually_review_predictions
+)
 import pandas as pd
 
 if __name__ == "__main__":
@@ -69,12 +76,36 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split_data(selected_features, target_column)
 
     ###########################
+    # Validation Checks
+    ###########################
+
+    # 1. Check Class Distribution
+    print("\n--- Class Distribution Check ---")
+    check_class_distribution(y_train, y_test)
+
+    # 2. Check Data Leakage
+    print("\n--- Data Leakage Check ---")
+    check_data_leakage(X_train, X_test)
+
+    # 3. Inspect Feature Correlations
+    print("\n--- Feature Correlations ---")
+    inspect_feature_correlations(selected_features, target_column)
+
+    ###########################
     # Train and Evaluate Model
     ###########################
 
     # Train the model
     model = train_model(X_train, y_train)
-    print("Model training completed.")
+    print("\n--- Model Training Completed ---")
 
     # Evaluate the model
     evaluate_model(model, X_test, y_test)
+
+    # 4. Cross-Validation
+    print("\n--- Cross-Validation ---")
+    cross_validate_model(model, X_train, y_train)
+
+    # 5. Manual Prediction Review
+    print("\n--- Sample Prediction Review ---")
+    manually_review_predictions(model, X_test, y_test)
