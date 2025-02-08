@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import cross_val_score
 
 def check_class_distribution(y_train, y_test):
