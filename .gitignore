@@ -4,3 +4,4 @@ food-recipe-recommender\data\
 __pycache__
 .mypy_cache
 .pytest_cache
+.DS_Store
