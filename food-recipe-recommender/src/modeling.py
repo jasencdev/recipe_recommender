@@ -1,3 +1,4 @@
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
@@ -28,6 +29,14 @@ def train_model(X_train, y_train):
     """
     model = LogisticRegression(random_state=42, max_iter=1000)
     model.fit(X_train, y_train)
+
+    # Save the trained model
+    try:
+        joblib.dump(model, 'recipe_recommender_model.joblib')
+        print("Model saved successfully to 'recipe_recommender_model.joblib")
+    except Exception as e:
+        print(f"Error saving model: {e}")
+
     return model
 
 
