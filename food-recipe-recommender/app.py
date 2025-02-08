@@ -65,7 +65,7 @@ def main():
     if ingredients:
         # Displaying the cleaned list back to the user
         for ingredient in ingredients.split(","):
-            st.write(f"-- {ingredient}")
+            st.write(f"-- -- {ingredient}")
 
     if num_range:
         st.write(f"-- You have selected {num_range} ingredients for your recipe.")
