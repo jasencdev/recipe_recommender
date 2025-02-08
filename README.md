@@ -1,5 +1,27 @@
 # recipe-recommender
 
+```text
+recipe-recommender/
+│── .venv/                       # Virtual environment (not in Git)
+│── food-recipe-recommender/
+│   ├── src/
+│   │   ├── data/                # Datasets (not in Git)
+│   │   ├── __init__.py          # Python entry point for src module
+│   │   ├── preprocessing.py     # Data cleaning
+│   │   ├── feature_engineering.py
+│   │   ├── feature_selection.py
+│   │   ├── modeling.py
+│   │   ├── validation_checks.py
+│   │── app.py                  # Streamlit application
+│   │── main.py                 # Main model pipeline
+├── images/                     # Output images
+│── setup.sh                    # Environment setup
+│── get_data.sh                 # Download & extract dataset
+│── run_model.sh                # Automate pipeline
+│── requirements.txt            # Dependencies
+│── README.md
+```
+
 ## Installation
 
 This is for windows because Unix operating systems can install virtualenv as a package outside of `pip`.
@@ -30,19 +52,20 @@ curl -L -o ~/Downloads/recipe-recommender-data.zip\
   https://www.kaggle.com/api/v1/datasets/download/shuyangli94/food-com-recipes-and-user-interactions
 ```
 
-Unzip the file downloaded to your downloads file and move the extracted `recipe-recommender-data` to `data` folder under `src`. Note: Running the next code block will download the zip file.
+Unzip the file downloaded to your downloads file and move the extracted `recipe-recommender-data` to `data` folder under `src`. Note: Running this code block will download the zip file.
 
 ## Run the model
 
 You can run this locally in two different ways. 
 
-1. Run an interactive version using Steamlit
+1. Run an interactive version using Steamlit. This will walk you through the steps of loading and 
+evaluating the model. 
 `steamlit run food-recipe-recommender/app.py` 
 
-2. Running the model through terminal 
+2. Running the model through terminal, the output of which is continued in this README.
 `python food-recipe-recommender/main.py`
 
-## Get the outputs/see the images
+## Main.py Pipeline Output
 
 ```bash
 Original dataset size: 231637 recipes
