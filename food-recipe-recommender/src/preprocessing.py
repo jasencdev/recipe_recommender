@@ -18,8 +18,8 @@ def load_data():
 
     # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
     # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    recipes_data_path = (base_dir / 'data' / 'RAW_recipes.csv').resolve()
-    interactions_data_path = (base_dir / 'data' / 'RAW_interactions.csv').resolve()
+    recipes_data_path = (base_dir / 'food-recipe-recommender' / 'data' / 'RAW_recipes.csv').resolve()
+    interactions_data_path = (base_dir / 'food-recipe-recommender' / 'data' / 'RAW_interactions.csv').resolve()
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
