@@ -1,7 +1,11 @@
 import streamlit as st
 import joblib
 import numpy as np
+import pandas as pd
 from pathlib import Path
+from src.preprocessing import load_data, preprocess_data
+from src.feature_selection import select_features
+from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
 
 def load_model():
     """
@@ -34,41 +38,66 @@ def main():
     st.title("Recipe Recommendation App")
     st.write("Welcome! This app will demonstrate recipe recommendations based on your available ingredients.")
     st.write(f"1. First, let's make sure the model loads. Click the button below on the left to load the model.")
+    loaded = False
+    if st.button('Load Model'):
+        # Loading the model from the specified path
+        loaded_model = load_model()
+        loaded = True
+
     st.write(f"2. Enter your name, ingredients, and the number of ingredients your desired recipe should have using the side bar on the left.")
-
-    # Sidebar: A place to add user input controls
-    with st.sidebar:
-        if st.button('Load Model'):
-            # Loading the model from the specified path
-            loaded_model = load_model()
-
         
-        # Creating an input field for the user to enter their name
-        user_name = st.text_input('Enter your name:')
+    # Creating an input field for the user to enter their name
+    user_name = st.text_input('Enter your name:')
 
-        # Creating a text area for the user to enter ingredients
-        ingredients = st.text_area('Enter your ingredients, separated by commas:')
+    # Creating a text area for the user to enter ingredients
+    cook_time = st.slider(
+        'Desired cook time (0 - 60 min):',
+        min_value=0,
+        max_value=60
+    )
 
-        # Option to choose a number range, demonstrating selection widgets
-        num_range = st.slider(
-            'Select a number of ingredients for your recipe:',
-            min_value=0,
-            max_value=50
-        )
-
-        
+    # Option to choose a number range, demonstrating selection widgets
+    complexity = st.slider(
+        'Desired complexity (0-100) for your recipe:',
+        min_value=0,
+        max_value=100
+    )
 
     # Main area of the app: displaying user inputs and some computations
     if user_name:
-        st.write(f"-- Hello, {user_name}! Nice to meet you. The ingredients you entered are: ")
+        st.write(f"-- Hello, {user_name}! Nice to meet you.")
     
-    if ingredients:
-        # Displaying the cleaned list back to the user
-        for ingredient in ingredients.split(","):
-            st.write(f"-- -- {ingredient}")
+    if cook_time:
+        st.write(f"-- You have selected {cook_time} completiy for your recipe.")
 
-    if num_range:
-        st.write(f"-- You have selected {num_range} ingredients for your recipe.")
+    if complexity:
+        st.write(f"-- You have selected {complexity} completiy for your recipe.")
+
+    if user_name and cook_time and complexity and loaded:
+        st.write(f"Great! Now we can recommend some recipes for you.")
+        
+    if st.button("Recommend Recipes"):
+        # Load the dataset
+        # Load the dataset
+        recipes, interactions = load_data()
+
+        # Preprocess the dataset
+        recipes_cleaned, interactions_cleaned = preprocess_data(recipes, interactions)
+
+        # Feature selection
+        selected_features = select_features(recipes_cleaned, interactions_cleaned)
+
+        ### 🔹 Integrating KNN-Based Recommendation System ###
+        
+        # Initialize the Recipe Recommender
+        recommender = RecipeRecommender(selected_features, k=5)  # k=5: Number of recommendations to make
+        
+        # Get recommendations
+        recommendations = recommender.recommend_recipes(cook_time, complexity)
+        
+        # Display recommendations
+        st.write("Here are your recommended recipes:")
+        st.dataframe(recommendations)
 
 if __name__ == "__main__":
     main()
