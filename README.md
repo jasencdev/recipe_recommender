@@ -2,24 +2,25 @@
 
 ```text
 recipe-recommender/
-│── .venv/                       # Virtual environment (not in Git)
+│── .venv/                          # Virtual environment (not in Git)
 │── food-recipe-recommender/
 │   ├── src/
-│   │   ├── data/                # Datasets (not in Git)
-│   │   ├── __init__.py          # Python entry point for src module
-│   │   ├── preprocessing.py     # Data cleaning
-│   │   ├── feature_engineering.py
-│   │   ├── feature_selection.py
-│   │   ├── modeling.py
-│   │   ├── validation_checks.py
-│   │── app.py                  # Streamlit application
-│   │── main.py                 # Main model pipeline
-├── images/                     # Output images
-│── setup.sh                    # Environment setup
-│── get_data.sh                 # Download & extract dataset
-│── run_model.sh                # Automate pipeline
-│── requirements.txt            # Dependencies
-│── README.md
+│   │   ├── data/                   # Datasets (not in Git)
+│   │   ├── __init__.py             # Python entry point for src module
+│   │   ├── preprocessing.py        # Data cleaning
+│   │   ├── feature_engineering.py  # Feature engineering file
+│   │   ├── feature_selection.py    # Feature selection file
+│   │   ├── modeling.py             # File for modeling
+│   │   ├── validation_checks.py    # Developed validation checks
+│   │── app.py                      # Streamlit application
+│   │── main.py                     # Main model pipeline
+├── images/                         # Output images
+│── .gitignore                      # Git ignore config file
+│── LICENSE                         # How the app can be used
+│── README.md                       # Instructions for use
+│── recipe_recommender_mode.joblib  # Saved model
+│── requirements.txt                # Dependencies
+│── selected_features.csv           # CSV output from the model
 ```
 
 ## Installation
