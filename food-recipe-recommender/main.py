@@ -41,8 +41,7 @@ def main():
     print(normalized_features[:5])
 
     # Sanity check
-    sanity_check(selected_features, ingredient_matrix, normalized_features)
+    recipes_checked = sanity_check(selected_features, ingredient_matrix, normalized_features)
     
-
 if __name__ == "__main__":
     main()
