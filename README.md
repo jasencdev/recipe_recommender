@@ -36,20 +36,17 @@ Unzip the file downloaded to your downloads file and move the extracted `recipe-
 
 Note: You should check `food-recipe-recommender/src/preprocessing.py` to make sure the right file paths are set based on your system.
 
-```bash
+```python
 def load_data():
     '''Module for loading data'''
 
     # Build the absolute file path
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # For Unix
+    base_dir = Path.cwd()
+
     # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
     # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    
-    # For Windows
-    recipes_data_path = os.path.join(base_dir, 'data\RAW_recipes.csv')
-    interactions_data_path = os.path.join(base_dir, 'data\RAW_interactions.csv')
+    recipes_data_path = (base_dir / 'data' / 'RAW_recipes.csv').resolve()
+    interactions_data_path = (base_dir / 'data' / 'RAW_interactions.csv').resolve()
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
