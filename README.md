@@ -1,4 +1,11 @@
-# recipe-recommender
+# Food Recipe Recommender with Incredient Substitutions
+
+Problem: Create a recommendation system that suggests recipes based on
+available ingredients and oﬀers ingredient substitution options.
+
+Dataset: Food.com Recipes and Interactions
+
+This was the problem I chose as part of Quantic's Data Science Foundations Capstone. 
 
 ```text
 recipe-recommender/
