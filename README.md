@@ -211,3 +211,7 @@ In this context, the strong correlation between `avg_rating` and `rating_binary`
 The near-perfect metrics suggest the model is very good at predicting high-rated recipes based on the available features. The imbalanced dataset (84% high-rated recipes) is also typical in rating-based classification.
 
 The current implementation looks sound. 
+
+## Author
+Jasen Carroll \
+08 Feb 2025
