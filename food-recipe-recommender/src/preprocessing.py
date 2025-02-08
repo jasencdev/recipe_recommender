@@ -1,6 +1,6 @@
 """Module Imports"""
 
-import os
+from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -14,15 +14,12 @@ def load_data():
     '''Module for loading data'''
 
     # Build the absolute file path
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # For Unix
+    base_dir = Path.cwd()
+
     # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
     # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    
-    # For Windows
-    recipes_data_path = os.path.join(base_dir, 'data\RAW_recipes.csv')
-    interactions_data_path = os.path.join(base_dir, 'data\RAW_interactions.csv')
+    recipes_data_path = (base_dir / 'data' / 'RAW_recipes.csv').resolve()
+    interactions_data_path = (base_dir / 'data' / 'RAW_interactions.csv').resolve()
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
