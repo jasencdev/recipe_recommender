@@ -1,10 +1,10 @@
 """Module Imports"""
 
+import ast
 from pathlib import Path
+from collections import Counter
 import matplotlib.pyplot as plt
 import pandas as pd
-import ast
-from collections import Counter
 
 ###########################
 # Exploratory Data Analysis
@@ -62,8 +62,8 @@ def preprocess_data(recipes, interactions):
     # - Keep only recipes with <= 20 ingredients
     # - Keep only recipes with preparation time <= 60 minutes
     recipes_filtered = recipes_cleaned.loc[
-        (recipes_cleaned['num_ingredients'] <= 20) & 
-        (recipes_cleaned['minutes'] <= 60) 
+        (recipes_cleaned['num_ingredients'] <= 20) &
+        (recipes_cleaned['minutes'] <= 60)
     ]
 
     print(f"Original dataset size: {recipes_cleaned.shape[0]} recipes")

@@ -1,7 +1,5 @@
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import CountVectorizer
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -78,13 +76,13 @@ def sanity_check(recipes, ingredient_matrix, normalized_features):
 
     # Plot feature distributions
     numerical_columns = ['minutes', 'n_steps', 'n_ingredients', 'avg_rating', 'num_interactions', 'complexity_score']
-    
+
     plt.figure(figsize=(12, 6))
     for i, col in enumerate(numerical_columns):
         plt.subplot(2, 3, i + 1)
         sns.histplot(recipes[col], kde=True)
         plt.title(col)
-    
+
     plt.tight_layout()
     plt.show()
 

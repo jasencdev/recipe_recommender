@@ -1,7 +1,5 @@
 import joblib
 import pandas as pd
-import numpy as np
-import ast
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 
@@ -23,7 +21,7 @@ class RecipeRecommender:
         required_columns = {'minutes', 'complexity_score'}
         if not required_columns.issubset(self.data.columns):
             raise ValueError(f"Dataset must contain the following columns: {required_columns}")
-        
+
         # Prepare data and train model
         self._prepare_data()
 
@@ -36,7 +34,7 @@ class RecipeRecommender:
 
         # Normalize features
         self.features_scaled = pd.DataFrame(self.scaler.fit_transform(self.features), columns=self.features.columns)
-        
+
         # Convert back to DataFrame to retain feature names
         self.features_scaled = pd.DataFrame(self.features_scaled, columns=['minutes', 'complexity_score'])
 
@@ -57,7 +55,7 @@ class RecipeRecommender:
             print("Model and scaler saved successfully")
         except Exception as e:
             print(f"Error saving model: {e}")
-        
+
     def recommend_recipes(self, desired_time, desired_complexity):
         """
         Recommend recipes based on user's preferred time and complexity.

@@ -1,11 +1,7 @@
+from pathlib import Path
 import streamlit as st
 import joblib
-import numpy as np
-import pandas as pd
-from pathlib import Path
-from src.preprocessing import load_data, preprocess_data
-from src.feature_selection import select_features
-from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
+
 
 def load_model():
     """
@@ -16,22 +12,20 @@ def load_model():
     """
     base_dir = Path(__file__).resolve().parent
     model_path = (base_dir / './models' / 'recipe_recommender_model.joblib').resolve()
-    
+
     try:
         # Attempt to load the model
         loaded_model = joblib.load(model_path)
-        st.success(f"Model loaded successfully!")
+        st.success("Model loaded successfully!")
         return loaded_model
-    
+
     except FileNotFoundError:
         st.error(f"Model file not found: {model_path}. Please ensure it exists in './models'.")
         return None
-    
+
     except Exception as e:
         st.error(f"An error occurred while loading the model: {e}")
         return None
-    
-    return None
 
 def main():
     st.session_state["recommendations"] = None
@@ -65,41 +59,41 @@ def main():
             if st.button("Recommend Recipes"):
                 # Get recommendations
                 recommendations = loaded_model.recommend_recipes(cook_time, complexity)
-                
+
                 # Store recommendations in session state
                 st.session_state["recommendations"] = recommendations
                 st.session_state["selected_recipe"] = None
 
     if "recommendations" in st.session_state and st.session_state["recommendations"] is None:
-        st.write(f"1. First, let's make sure the model loads. We'll do this for you.")
-        
-        st.write(f"2. Enter your name, ingredients, and the number of ingredients your desired recipe should have using the side bar on the left.")
+        st.write("1. First, let's make sure the model loads. We'll do this for you.")
+
+        st.write("2. Enter your name, ingredients, and the number of ingredients your desired recipe should have using the side bar on the left.")
         if user_name:
             st.write(f"-- Hello, {user_name}! Nice to meet you.")
-        
+
         if cook_time:
             st.write(f"-- You have selected {cook_time} completiy for your recipe.")
 
         if complexity:
             st.write(f"-- You have selected {complexity} completiy for your recipe.")
-        st.write(f"3. Don't click the Recommend Recipes button until you've completed the above steps.")
+        st.write("3. Don't click the Recommend Recipes button until you've completed the above steps.")
         if user_name and cook_time and complexity and loaded_model is not None:
-            st.write(f"Great! Now we can recommend some recipes for you.")
-   
+            st.write("Great! Now we can recommend some recipes for you.")
+
     #    # Check if the model is loaded
     #     if loaded_model is not None and user_name and cook_time and complexity:
     #         if st.button("Recommend Recipes"):
     #             # Get recommendations
     #             recommendations = loaded_model.recommend_recipes(cook_time, complexity)
-                
+
     #             # Store recommendations in session state
     #             st.session_state["recommendations"] = recommendations
     #             st.session_state["selected_recipe"] = None
     # Main area of the app: displaying user inputs and some computations
-   
 
 
-    
+
+
 
 
 
@@ -111,10 +105,10 @@ def main():
             st.write(f"## {row['name'].title()}")
             st.write(f"**Cook Time:** {row['minutes']} minutes")
             st.write(f"**Complexity:** {row['complexity_score']}")
-            st.write(f"**Ingredients:**")
+            st.write("**Ingredients:**")
             st.write(", ".join([ingredient.title() for ingredient in eval(row["ingredients"])]))  # Convert ingredients to Title Case
 
-            st.write(f"**Steps:**")
+            st.write("**Steps:**")
             steps = eval(row["steps"])
             for i, step in enumerate(steps, 1):
                 st.write(f"{i}. {step.capitalize()}")

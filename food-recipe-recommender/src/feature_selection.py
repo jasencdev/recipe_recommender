@@ -1,5 +1,3 @@
-import pandas as pd
-
 def select_features(recipes, interactions):
     """
     Select the most important features for modeling.
@@ -9,10 +7,10 @@ def select_features(recipes, interactions):
     Returns:
         selected_features: DataFrame containing only selected features.
     """
-    
+
     # Compute average rating per recipe
     avg_rating_per_recipe = interactions.groupby('recipe_id')['rating'].mean().rename('avg_rating')
-    
+
     # Compute number of interactions per recipe (popularity proxy)
     num_interactions_per_recipe = interactions.groupby('recipe_id').size().rename('num_interactions')
 

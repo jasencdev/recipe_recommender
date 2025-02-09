@@ -1,6 +1,5 @@
 from src.preprocessing import load_data, summary_data, preprocess_data, plot_prep_time_vs_ingredients, plot_most_used_ingredients
 from src.feature_selection import select_features
-from src.feature_engineering import encode_ingredients, normalize_numerical_features, sanity_check
 from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
 
 def main():
@@ -30,7 +29,7 @@ def main():
     # sanity_check(selected_features)
 
     ### 🔹 Integrating KNN-Based Recommendation System ###
-    
+
     # Initialize the Recipe Recommender
     recommender = RecipeRecommender(selected_features, k=5)  # k=5: Number of recommendations to make
 
@@ -44,6 +43,6 @@ def main():
     # Display recommendations
     print("\nRecommended Recipes:")
     print(recommendations[['minutes', 'complexity_score', 'similarity_distance']])
-    
+
 if __name__ == "__main__":
     main()
