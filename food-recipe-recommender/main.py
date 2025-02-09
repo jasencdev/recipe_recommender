@@ -42,7 +42,7 @@ def main():
 
     # Initialize the Recipe Recommender
     recommender = RecipeRecommender(
-        selected_features, k=5
+        selected_features, n_clusters=8
     )  # k=5: Number of recommendations to make
 
     # Ask for user input (simulating with predefined values)

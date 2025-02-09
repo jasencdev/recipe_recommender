@@ -2,13 +2,14 @@
 
 import joblib
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import NearestNeighbors
+from sklearn.cluster import KMeans
 
 
 class RecipeRecommender:
     """ K-Nearest Neighbors based recipe recommender system. """
-    def __init__(self, recipes_df, k=5):
+    def __init__(self, recipes_df, n_clusters=8):
         """
         Initialize the KNN-based recipe recommendation system.
 
@@ -16,24 +17,21 @@ class RecipeRecommender:
             recipes_df (DataFrame): Preprocessed recipes DataFrame.
             k (int): Number of neighbors to use in KNN (default: 5).
         """
-        self.k = k
         self.data = recipes_df.copy()  # Store dataset
         self.scaler = StandardScaler()
-        self.knn = None  # KNN model will be trained later
+        self.kmeans = None  # KNN model will be trained later
         self.feature_names = ['minutes', 'complexity_score']
+        self.n_clusters = n_clusters
 
         # Ensure required columns exist
-        required_columns = {"minutes", "complexity_score"}
-        if not required_columns.issubset(self.data.columns):
-            raise ValueError(
-                f"Dataset must contain the following columns: {required_columns}"
-            )
+        if not set(self.feature_names).issubset(self.data.columns):
+            raise ValueError(f"Missing required columns: {self.feature_names}")
 
         # Prepare data and train model
         self._prepare_data()
 
     def _prepare_data(self):
-        """Preprocess the dataset and train the KNN model."""
+        """Preprocess the dataset and train the k-means model."""
         # Select relevant features
         self.features = self.data[self.feature_names]
 
@@ -47,10 +45,14 @@ class RecipeRecommender:
 
     def _train_knn(self):
         """
-        Train the K-Nearest Neighbors model.
+        Train the k-means model.
         """
-        self.knn = NearestNeighbors(n_neighbors=self.k, metric="euclidean")
-        self.knn.fit(self.features_scaled)
+        # Train k-means
+        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=42)
+        self.kmeans.fit(self.features_scaled)
+
+        # Add cluster assignments to data
+        self.data['cluster'] = self.kmeans.labels_
 
         # Save the trained model safely
         try:
@@ -64,7 +66,7 @@ class RecipeRecommender:
         except FileNotFoundError as e:
             print(f"Error saving model: {e}")
 
-    def recommend_recipes(self, desired_time, desired_complexity):
+    def recommend_recipes(self, desired_time, desired_complexity, n_recommendations=5):
         """
         Recommend recipes based on user's preferred time and complexity.
 
@@ -75,8 +77,8 @@ class RecipeRecommender:
         Returns:
             DataFrame: Top K nearest recipes.
         """
-        if self.knn is None:
-            raise ValueError("KNN model is not trained yet.")
+        if self.kmeans is None:
+            raise ValueError("kmeans model is not trained yet.")
 
         # Load the scaler to ensure consistent transformations
         try:
@@ -98,13 +100,19 @@ class RecipeRecommender:
         )
 
 
-        # Find K nearest neighbors
-        distances, indices = self.knn.kneighbors(user_input_scaled, n_neighbors=self.k)
+        # Find nearest cluster
+        cluster = self.kmeans.predict(user_input_scaled)[0]
 
-        # Retrieve recommended recipes
-        recommendations = self.data.iloc[indices[0]].copy()
-        recommendations.loc[:, "similarity_distance"] = distances[
-            0
-        ]  # Add similarity score
+        # Get recipes from cluster and sort by similarity to preferences
+        cluster_recipes = self.data[self.data['cluster'] == cluster].copy()
 
+        # Calculate distance to user preferences for sorting
+        cluster_recipes['similarity_distance'] = cluster_recipes.apply(
+            lambda x: np.sqrt((x['minutes'] - desired_time)**2 +
+                            (x['complexity_score'] - desired_complexity)**2),
+            axis=1
+        )
+
+        # Sort by similarity and return top n
+        recommendations = cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
         return recommendations
