@@ -7,7 +7,7 @@ from src.preprocessing import (
     plot_prep_time_vs_ingredients,
     plot_most_used_ingredients,
 )
-from src.feature_selection import select_features
+from src.features import select_features
 from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
 
 

@@ -9,6 +9,7 @@ def select_features(recipes, interactions):
     Returns:
         selected_features: DataFrame containing only selected features.
     """
+    ## Feature Engineering ##
 
     # Compute average rating per recipe
     avg_rating_per_recipe = (
@@ -41,6 +42,8 @@ def select_features(recipes, interactions):
         & (recipes["avg_rating"] >= 4)
         & (recipes["num_interactions"] >= 3)
     ]
+
+    ## Feature Selection ##
 
     # Select the most important features
     selected_columns = [
