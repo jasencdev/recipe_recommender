@@ -11,8 +11,8 @@ This was the problem I chose as part of Quantic's Data Science Foundations Capst
 recipe-recommender/
 │── .venv/                          # Virtual environment (not in Git)
 │── food-recipe-recommender/
+│   ├── data/                       # Datasets (not in Git)
 │   ├── src/
-│   │   ├── data/                   # Datasets (not in Git)
 │   │   ├── __init__.py             # Python entry point for src module
 │   │   ├── preprocessing.py        # Data cleaning
 │   │   ├── feature_engineering.py  # Feature engineering file
