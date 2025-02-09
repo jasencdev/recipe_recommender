@@ -1,6 +1,7 @@
 import joblib
 import pandas as pd
 import numpy as np
+import ast
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 
@@ -22,7 +23,7 @@ class RecipeRecommender:
         required_columns = {'minutes', 'complexity_score'}
         if not required_columns.issubset(self.data.columns):
             raise ValueError(f"Dataset must contain the following columns: {required_columns}")
-
+        
         # Prepare data and train model
         self._prepare_data()
 
@@ -34,7 +35,10 @@ class RecipeRecommender:
         self.features = self.data[['minutes', 'complexity_score']]
 
         # Normalize features
-        self.features_scaled = self.scaler.fit_transform(self.features)
+        self.features_scaled = pd.DataFrame(self.scaler.fit_transform(self.features), columns=self.features.columns)
+        
+        # Convert back to DataFrame to retain feature names
+        self.features_scaled = pd.DataFrame(self.features_scaled, columns=['minutes', 'complexity_score'])
 
         # Train the KNN model
         self._train_knn()
@@ -46,15 +50,14 @@ class RecipeRecommender:
         self.knn = NearestNeighbors(n_neighbors=self.k, metric='euclidean')
         self.knn.fit(self.features_scaled)
 
-        # Save the trained model
+        # Save the trained model safely
         try:
-            joblib.dump(self.knn, 'food-recipe-recommender/models/recipe_recommender_model.joblib')
-            print("Model saved successfully to 'recipe_recommender_model.joblib")
+            joblib.dump(self, 'food-recipe-recommender/models/recipe_recommender_model.joblib')
+            joblib.dump(self.scaler, 'food-recipe-recommender/models/scaler.joblib')  # Save scaler too
+            print("Model and scaler saved successfully")
         except Exception as e:
             print(f"Error saving model: {e}")
-
-        return self.knn      
-
+        
     def recommend_recipes(self, desired_time, desired_complexity):
         """
         Recommend recipes based on user's preferred time and complexity.
@@ -66,14 +69,25 @@ class RecipeRecommender:
         Returns:
             DataFrame: Top K nearest recipes.
         """
+        if self.knn is None:
+            raise ValueError("KNN model is not trained yet.")
+
+        # Load the scaler to ensure consistent transformations
+        try:
+            self.scaler = joblib.load('food-recipe-recommender/models/scaler.joblib')
+        except Exception as e:
+            print(f"Error loading scaler: {e}")
+            return None
+
         # Scale user input to match feature space
         user_input_scaled = self.scaler.transform([[desired_time, desired_complexity]])
+        user_input_scaled = pd.DataFrame(user_input_scaled, columns=['minutes', 'complexity_score'])
 
         # Find K nearest neighbors
         distances, indices = self.knn.kneighbors(user_input_scaled, n_neighbors=self.k)
 
         # Retrieve recommended recipes
         recommendations = self.data.iloc[indices[0]].copy()
-        recommendations['similarity_distance'] = distances[0]  # Add similarity score
+        recommendations.loc[:, 'similarity_distance'] = distances[0]  # Add similarity score
 
         return recommendations

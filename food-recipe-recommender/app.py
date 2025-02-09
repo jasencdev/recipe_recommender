@@ -38,18 +38,12 @@ def main():
     st.session_state["selected_recipe"] = None
     # Title and a brief description of what our app does
     st.title("Recipe Recommendation App")
-    st.write("Welcome! This app will demonstrate recipe recommendations based on desired cooktime and complexity")
-    st.write(f"1. First, let's make sure the model loads. Click the button below on the left to load the model.")
-    loaded = False
+    st.write("Welcome! This app will demonstrate recipe recommendations based on desired cooktime and complexity. We've taken a large dataset from Kaggle and distilled it down to only highly rated recipes with a limited complexity score, a combination of the number of steps and ingredients in a recipe.")
+
 
      # Sidebar: A place to add user input controls
     with st.sidebar:
-        if st.button('Load Model'):
-            # Loading the model from the specified path
-            loaded_model = load_model()
-            loaded = True
-
-        
+        loaded_model = load_model()
         # Creating an input field for the user to enter their name
         user_name = st.text_input('Enter your name:')
 
@@ -57,54 +51,54 @@ def main():
         cook_time = st.slider(
             'Desired cook time (0 - 60 min):',
             min_value=0,
-            max_value=60
+            max_value=30
         )
 
         # Option to choose a number range, demonstrating selection widgets
         complexity = st.slider(
             'Desired complexity (0-100) for your recipe:',
             min_value=0,
-            max_value=100
+            max_value=50
         )
 
-        if st.button("Recommend Recipes"):
-            # Load the dataset
-            # Load the dataset
-            recipes, interactions = load_data()
+        if loaded_model is not None and user_name and cook_time and complexity:
+            if st.button("Recommend Recipes"):
+                # Get recommendations
+                recommendations = loaded_model.recommend_recipes(cook_time, complexity)
+                
+                # Store recommendations in session state
+                st.session_state["recommendations"] = recommendations
+                st.session_state["selected_recipe"] = None
 
-            # Preprocess the dataset
-            recipes_cleaned, interactions_cleaned = preprocess_data(recipes, interactions)
+    if "recommendations" in st.session_state and st.session_state["recommendations"] is None:
+        st.write(f"1. First, let's make sure the model loads. We'll do this for you.")
+        
+        st.write(f"2. Enter your name, ingredients, and the number of ingredients your desired recipe should have using the side bar on the left.")
+        if user_name:
+            st.write(f"-- Hello, {user_name}! Nice to meet you.")
+        
+        if cook_time:
+            st.write(f"-- You have selected {cook_time} completiy for your recipe.")
 
-            # Feature selection
-            selected_features = select_features(recipes_cleaned, interactions_cleaned)
-
-            ### 🔹 Integrating KNN-Based Recommendation System ###
-            
-            # Initialize the Recipe Recommender
-            recommender = RecipeRecommender(selected_features, k=5)  # k=5: Number of recommendations to make
-            
-            # Get recommendations
-            recommendations = recommender.recommend_recipes(cook_time, complexity)
-            
-            # Store recommendations in session state
-            st.session_state["recommendations"] = recommendations
-            st.session_state["selected_recipe"] = None
-
-    st.write(f"2. Enter your name, ingredients, and the number of ingredients your desired recipe should have using the side bar on the left.")
-    st.write(f"3. Don't click the Recommend Recipes button until you've completed the above steps.")
+        if complexity:
+            st.write(f"-- You have selected {complexity} completiy for your recipe.")
+        st.write(f"3. Don't click the Recommend Recipes button until you've completed the above steps.")
+        if user_name and cook_time and complexity and loaded_model is not None:
+            st.write(f"Great! Now we can recommend some recipes for you.")
    
+    #    # Check if the model is loaded
+    #     if loaded_model is not None and user_name and cook_time and complexity:
+    #         if st.button("Recommend Recipes"):
+    #             # Get recommendations
+    #             recommendations = loaded_model.recommend_recipes(cook_time, complexity)
+                
+    #             # Store recommendations in session state
+    #             st.session_state["recommendations"] = recommendations
+    #             st.session_state["selected_recipe"] = None
     # Main area of the app: displaying user inputs and some computations
-    if user_name:
-        st.write(f"-- Hello, {user_name}! Nice to meet you.")
-    
-    if cook_time:
-        st.write(f"-- You have selected {cook_time} completiy for your recipe.")
+   
 
-    if complexity:
-        st.write(f"-- You have selected {complexity} completiy for your recipe.")
 
-    if user_name and cook_time and complexity and loaded:
-        st.write(f"Great! Now we can recommend some recipes for you.")
     
 
 

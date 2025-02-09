@@ -3,6 +3,7 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
+import ast
 from collections import Counter
 
 ###########################
@@ -53,8 +54,8 @@ def preprocess_data(recipes, interactions):
     # Drop missing values in recipes
     recipes_cleaned = recipes.dropna()
 
-    # Convert 'ingredients' column from string to list and count number of ingredients
-    recipes_cleaned['num_ingredients'] = recipes_cleaned['ingredients'].apply(lambda x: len(eval(x)))
+    recipes_cleaned = recipes_cleaned.copy()  # Ensure it's a separate copy
+    recipes_cleaned['num_ingredients'] = recipes_cleaned['ingredients'].apply(lambda x: len(ast.literal_eval(x)))
 
     # Apply the filtering criteria:
     # - Keep only recipes with average rating >= 4
