@@ -26,23 +26,8 @@ def main():
     print("Selected Features Sample:")
     print(selected_features.head())
 
-    # Feature Engineering
-
-    # Encode ingredients
-    ingredient_matrix, vectorizer = encode_ingredients(selected_features)
-
-    # Normalize numerical features
-    normalized_features, scaler = normalize_numerical_features(selected_features)
-
-    # Print the first few rows to verify
-    print("Encoded Ingredients Matrix Sample:")
-    print(ingredient_matrix[:5])
-
-    print("Normalized Features Sample:")
-    print(normalized_features[:5])
-
     # Sanity check
-    sanity_check(selected_features, ingredient_matrix, normalized_features)
+    # sanity_check(selected_features)
 
     ### 🔹 Integrating KNN-Based Recommendation System ###
     

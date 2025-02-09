@@ -57,10 +57,12 @@ def preprocess_data(recipes, interactions):
     recipes_cleaned['num_ingredients'] = recipes_cleaned['ingredients'].apply(lambda x: len(eval(x)))
 
     # Apply the filtering criteria:
+    # - Keep only recipes with average rating >= 4
     # - Keep only recipes with <= 20 ingredients
     # - Keep only recipes with preparation time <= 60 minutes
     recipes_filtered = recipes_cleaned.loc[
-        (recipes_cleaned['num_ingredients'] <= 20) & (recipes_cleaned['minutes'] <= 60)
+        (recipes_cleaned['num_ingredients'] <= 20) & 
+        (recipes_cleaned['minutes'] <= 60) 
     ]
 
     print(f"Original dataset size: {recipes_cleaned.shape[0]} recipes")

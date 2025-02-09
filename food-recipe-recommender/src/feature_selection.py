@@ -27,8 +27,11 @@ def select_features(recipes, interactions):
     # Define a complexity score (example: combination of steps and ingredients)
     recipes['complexity_score'] = recipes['n_steps'] * recipes['n_ingredients']
 
+   # Filter out recipes with a complexity score over 100 and rating below 4
+    recipes = recipes[(recipes['complexity_score'] <= 100) & (recipes['avg_rating'] >= 4) & (recipes['num_interactions'] >= 3)]
+
     # Select the most important features
-    selected_columns = ['minutes', 'n_steps', 'n_ingredients', 'avg_rating', 'num_interactions', 'complexity_score', 'ingredients']
+    selected_columns = ['name', 'avg_rating', 'minutes', 'complexity_score', 'ingredients', 'steps']
     selected_features = recipes[selected_columns]
 
     # Further feature selection logic can be added here

@@ -24,7 +24,7 @@ def load_model():
         return loaded_model
     
     except FileNotFoundError:
-        st.error(f"Model file not found: {model_path}. Please ensure it exists in '{MODEL_DIR}'.")
+        st.error(f"Model file not found: {model_path}. Please ensure it exists in './models'.")
         return None
     
     except Exception as e:
@@ -34,9 +34,11 @@ def load_model():
     return None
 
 def main():
+    st.session_state["recommendations"] = None
+    st.session_state["selected_recipe"] = None
     # Title and a brief description of what our app does
     st.title("Recipe Recommendation App")
-    st.write("Welcome! This app will demonstrate recipe recommendations based on your available ingredients.")
+    st.write("Welcome! This app will demonstrate recipe recommendations based on desired cooktime and complexity")
     st.write(f"1. First, let's make sure the model loads. Click the button below on the left to load the model.")
     loaded = False
     if st.button('Load Model'):
@@ -95,9 +97,25 @@ def main():
         # Get recommendations
         recommendations = recommender.recommend_recipes(cook_time, complexity)
         
-        # Display recommendations
-        st.write("Here are your recommended recipes:")
-        st.dataframe(recommendations)
+        # Store recommendations in session state
+        st.session_state["recommendations"] = recommendations
+        st.session_state["selected_recipe"] = None
+
+    # Show all recommendations and their details
+    if "recommendations" in st.session_state and st.session_state["recommendations"] is not None:
+        st.write("### Recommended Recipes")
+        for _, row in st.session_state["recommendations"].iterrows():
+            st.write("---")
+            st.write(f"## {row['name']}")
+            st.write(f"**Cook Time:** {row['minutes']} minutes")
+            st.write(f"**Complexity:** {row['complexity_score']}")
+            st.write(f"**Ingredients:**")
+            st.write(", ".join(eval(row["ingredients"])))
+            st.write(f"**Steps:**")
+            steps = eval(row["steps"])
+            for i, step in enumerate(steps, 1):
+                st.write(f"{i}. {step}")
+
 
 if __name__ == "__main__":
     main()
