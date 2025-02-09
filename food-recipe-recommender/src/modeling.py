@@ -5,6 +5,12 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+from src.validation_checks import (
+    validate_input_data,
+    validate_numeric_range,
+    validate_clustering_inputs,
+    validate_recipe_df_schema
+)
 
 
 class RecipeRecommender:
@@ -17,6 +23,11 @@ class RecipeRecommender:
             recipes_df (DataFrame): Preprocessed recipes DataFrame.
             k (int): Number of neighbors to use in KNN (default: 5).
         """
+        validate_recipe_df_schema(recipes_df)
+        validate_input_data(recipes_df)
+        validate_clustering_inputs(n_clusters, len(recipes_df))
+
+
         self.data = recipes_df.copy()  # Store dataset
         self.scaler = StandardScaler()
         self.kmeans = None  # KNN model will be trained later
@@ -77,6 +88,14 @@ class RecipeRecommender:
         Returns:
             DataFrame: Top K nearest recipes.
         """
+                # Validate inputs
+        desired_time = validate_numeric_range(desired_time, 0, 300, 'desired cooking time')
+        desired_complexity = validate_numeric_range(
+            desired_complexity, 0, 100, 'desired complexity')
+
+        if not isinstance(n_recommendations, int) or n_recommendations < 1:
+            raise ValueError("Number of recommendations must be a positive integer")
+
         if self.kmeans is None:
             raise ValueError("kmeans model is not trained yet.")
 

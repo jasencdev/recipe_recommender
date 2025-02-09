@@ -54,12 +54,12 @@ def main():
 
         # Creating a text area for the user to enter ingredients
         cook_time = st.slider(
-            "Desired cook time (0 - 60 min):", min_value=0, max_value=30
+            "Desired cook time (0 - 30 min):", min_value=0, max_value=30
         )
 
         # Option to choose a number range, demonstrating selection widgets
         complexity = st.slider(
-            "Desired complexity (0-100) for your recipe:", min_value=0, max_value=50
+            "Desired complexity (0-50) for your recipe:", min_value=0, max_value=50
         )
 
         if loaded_model is not None and user_name and cook_time and complexity:
@@ -78,8 +78,7 @@ def main():
         st.write("1. First, let's make sure the model loads. We'll do this for you.")
 
         st.write(
-            "2. Enter your name, ingredients, and the number of ingredients your desired "
-            "recipe should have using the side bar on the left."
+            "2. Open the slider on the left. Enter your name, desired cook time, and complexity."
         )
         if user_name:
             st.write(f"-- Hello, {user_name}! Nice to meet you.")
