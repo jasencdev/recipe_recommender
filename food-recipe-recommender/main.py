@@ -1,8 +1,18 @@
-from src.preprocessing import load_data, summary_data, preprocess_data, plot_prep_time_vs_ingredients, plot_most_used_ingredients
+"""Module Imports"""
+
+from src.preprocessing import (
+    load_data,
+    summary_data,
+    preprocess_data,
+    plot_prep_time_vs_ingredients,
+    plot_most_used_ingredients,
+)
 from src.feature_selection import select_features
 from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
 
+
 def main():
+    """Main script to execute the recipe recommendation system."""
     # Load the dataset
     recipes, interactions = load_data()
 
@@ -31,7 +41,9 @@ def main():
     ### 🔹 Integrating KNN-Based Recommendation System ###
 
     # Initialize the Recipe Recommender
-    recommender = RecipeRecommender(selected_features, k=5)  # k=5: Number of recommendations to make
+    recommender = RecipeRecommender(
+        selected_features, k=5
+    )  # k=5: Number of recommendations to make
 
     # Ask for user input (simulating with predefined values)
     desired_time = 30  # Example: User wants a 30-minute recipe
@@ -42,7 +54,8 @@ def main():
 
     # Display recommendations
     print("\nRecommended Recipes:")
-    print(recommendations[['minutes', 'complexity_score', 'similarity_distance']])
+    print(recommendations[["minutes", "complexity_score", "similarity_distance"]])
+
 
 if __name__ == "__main__":
     main()
