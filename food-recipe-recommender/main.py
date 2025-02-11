@@ -13,10 +13,7 @@ from src.preprocessing import (
     plot_most_used_ingredients,
 )
 from src.features import select_features
-from src.modeling import (
-    initialize_recommender,
-    recommend_recipes
-)
+from src.modeling import RecipeRecommender
 
 
 def main():
@@ -44,10 +41,10 @@ def main():
     #################################
 
     # Generate visualizations
-    plot_preparation_time(recipes_cleaned)
-    plot_ratings_distribution(interactions)
-    plot_ingredients_distribution(recipes_cleaned)
-    plot_correlation_heatmap(recipes_cleaned)
+    #plot_preparation_time(recipes_cleaned)
+    #plot_ratings_distribution(interactions)
+    #plot_ingredients_distribution(recipes_cleaned)
+    #plot_correlation_heatmap(recipes_cleaned)
     # plot_review_sentiment(interactions)
 
     #################################
@@ -58,10 +55,10 @@ def main():
     recipes_cleaned, interactions_cleaned = preprocess_data(recipes_cleaned, interactions)
 
     # Visualize Preparation Time vs Number of Ingredients
-    plot_prep_time_vs_ingredients(recipes_cleaned)
+    #plot_prep_time_vs_ingredients(recipes_cleaned)
 
     # Visualize Most Used Ingredients
-    plot_most_used_ingredients(recipes_cleaned)
+    #plot_most_used_ingredients(recipes_cleaned)
 
     #################################
     # Feature Engineering & Selection
@@ -90,22 +87,19 @@ def main():
     # Build the Production Pipeline
     #################################
 
-    # Initialize the recipe recommender system
-    data, kmeans_model, scaler = initialize_recommender(selected_features)
+    # Initialize the Recipe Recommender
+    recommender = RecipeRecommender(selected_features)  # k=5: Number of recommendations to make
 
-    # Recommend recipes
-    recommendations = recommend_recipes(
-        data,
-        kmeans_model,
-        scaler,
-        desired_time=30,
-        desired_complexity=50,
-        n_recommendations=5
-        )
+    # Ask for user input (simulating with predefined values)
+    desired_time = 30  # Example: User wants a 30-minute recipe
+    desired_complexity = 50  # Example: User wants a medium complexity recipe
 
-    # Print the top recommendations
-    print("Top Recommendations:")
-    print(recommendations)
+    # Get recipe recommendations
+    recommendations = recommender.recommend_recipes(desired_time, desired_complexity)
+
+    # Display recommendations
+    print("\nRecommended Recipes:")
+    print(recommendations[['minutes', 'complexity_score', 'similarity_distance']])
 
 if __name__ == "__main__":
     main()

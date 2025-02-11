@@ -147,20 +147,17 @@ def plot_most_used_ingredients(recipes, top_n=10):
 def preprocess_data(recipes, interactions):
     """Clean up the data for usability"""
 
-    # Drop missing values in recipes
-    recipes_cleaned = recipes.dropna()
-
-    recipes_cleaned = recipes_cleaned.copy()  # Ensure it's a separate copy
+    recipes_cleaned = recipes.copy()  # Ensure it's a separate copy
     recipes_cleaned["num_ingredients"] = recipes_cleaned["ingredients"].apply(
         lambda x: len(ast.literal_eval(x))
     )
 
     # Apply the filtering criteria:
-    # - Keep only recipes with average rating >= 4
     # - Keep only recipes with <= 20 ingredients
     # - Keep only recipes with preparation time <= 60 minutes
     recipes_filtered = recipes_cleaned.loc[
-        (recipes_cleaned["num_ingredients"] <= 20) & (recipes_cleaned["minutes"] <= 60)
+        (recipes_cleaned["num_ingredients"] <= 20) &
+        (recipes_cleaned["minutes"] <= 60)
     ]
 
     print(f"Original dataset size: {recipes_cleaned.shape[0]} recipes")
