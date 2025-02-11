@@ -13,7 +13,10 @@ from src.preprocessing import (
     plot_most_used_ingredients,
 )
 from src.features import select_features
-from src.modeling import RecipeRecommender  # Import the KNN-based recommendation system
+from src.modeling import (
+    initialize_recommender,
+    recommend_recipes
+)
 
 
 def main():
@@ -45,7 +48,7 @@ def main():
     plot_ratings_distribution(interactions)
     plot_ingredients_distribution(recipes_cleaned)
     plot_correlation_heatmap(recipes_cleaned)
-    plot_review_sentiment(interactions)
+    # plot_review_sentiment(interactions)
 
     #################################
     # Preprocess the Data
@@ -72,28 +75,6 @@ def main():
     print(selected_features.head())
 
     #################################
-    # Modeling
-    #################################
-
-    ### 🔹 Integrating KNN-Based Recommendation System ###
-
-    # Initialize the Recipe Recommender
-    recommender = RecipeRecommender(
-        selected_features, n_clusters=8
-    )  # k=5: Number of recommendations to make
-
-    # Ask for user input (simulating with predefined values)
-    desired_time = 30  # Example: User wants a 30-minute recipe
-    desired_complexity = 50  # Example: User wants a medium complexity recipe
-
-    # Get recipe recommendations
-    recommendations = recommender.recommend_recipes(desired_time, desired_complexity)
-
-    # Display recommendations
-    print("\nRecommended Recipes:")
-    print(recommendations[["minutes", "complexity_score", "similarity_distance"]])
-
-    #################################
     # Split Data for Modeling
     #################################
 
@@ -104,6 +85,27 @@ def main():
     #################################
     # Train and Evaluate Model
     #################################
+
+    #################################
+    # Build the Production Pipeline
+    #################################
+
+    # Initialize the recipe recommender system
+    data, kmeans_model, scaler = initialize_recommender(selected_features)
+
+    # Recommend recipes
+    recommendations = recommend_recipes(
+        data,
+        kmeans_model,
+        scaler,
+        desired_time=30,
+        desired_complexity=50,
+        n_recommendations=5
+        )
+
+    # Print the top recommendations
+    print("Top Recommendations:")
+    print(recommendations)
 
 if __name__ == "__main__":
     main()

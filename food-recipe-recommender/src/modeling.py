@@ -12,126 +12,153 @@ from src.validation_checks import (
     validate_recipe_df_schema
 )
 
+# Global variables to store model state
+FEATURE_NAMES = ['minutes', 'complexity_score']
+N_CLUSTERS = 8
 
-class RecipeRecommender:
-    """ K-Nearest Neighbors based recipe recommender system. """
-    def __init__(self, recipes_df, n_clusters=8):
-        """
-        Initialize the KNN-based recipe recommendation system.
+def initialize_recommender(recipes_df, n_clusters=8):
+    """
+    Initialize the recipe recommendation system by preparing data and training the model.
+    
+    Args:
+        recipes_df (DataFrame): Preprocessed recipes DataFrame
+        n_clusters (int): Number of clusters for KMeans (default: 8)
+    
+    Returns:
+        tuple: (preprocessed_data, trained_kmeans_model, fitted_scaler)
+    """
+    # Validate inputs
+    validate_recipe_df_schema(recipes_df)
+    validate_input_data(recipes_df)
+    validate_clustering_inputs(n_clusters, len(recipes_df))
 
-        Args:
-            recipes_df (DataFrame): Preprocessed recipes DataFrame.
-            k (int): Number of neighbors to use in KNN (default: 5).
-        """
-        validate_recipe_df_schema(recipes_df)
-        validate_input_data(recipes_df)
-        validate_clustering_inputs(n_clusters, len(recipes_df))
+    # Create a copy of the input data
+    data = recipes_df.copy()
 
+    # Ensure required columns exist
+    if not set(FEATURE_NAMES).issubset(data.columns):
+        raise ValueError(f"Missing required columns: {FEATURE_NAMES}")
 
-        self.data = recipes_df.copy()  # Store dataset
-        self.scaler = StandardScaler()
-        self.kmeans = None  # KNN model will be trained later
-        self.feature_names = ['minutes', 'complexity_score']
-        self.n_clusters = n_clusters
+    # Prepare data and train model
+    return prepare_data(data, n_clusters)
 
-        # Ensure required columns exist
-        if not set(self.feature_names).issubset(self.data.columns):
-            raise ValueError(f"Missing required columns: {self.feature_names}")
+def prepare_data(data, n_clusters):
+    """
+    Preprocess the dataset and train the k-means model.
+    
+    Args:
+        data (DataFrame): Input recipe data
+        n_clusters (int): Number of clusters for KMeans
+    
+    Returns:
+        tuple: (preprocessed_data, trained_kmeans_model, fitted_scaler)
+    """
+    # Initialize scaler
+    scaler = StandardScaler()
 
-        # Prepare data and train model
-        self._prepare_data()
+    # Select and scale features
+    features = data[FEATURE_NAMES]
+    features_scaled = pd.DataFrame(
+        scaler.fit_transform(features),
+        columns=FEATURE_NAMES
+    )
 
-    def _prepare_data(self):
-        """Preprocess the dataset and train the k-means model."""
-        # Select relevant features
-        self.features = self.data[self.feature_names]
+    # Train model
+    kmeans_model = train_kmeans(features_scaled, n_clusters)
 
-        # Normalize features
-        self.features_scaled = pd.DataFrame(
-            self.scaler.fit_transform(self.features),
-            columns=self.feature_names  # Explicitly set feature names
+    # Add cluster assignments to data
+    data['cluster'] = kmeans_model.labels_
+
+    # Save models
+    save_models(kmeans_model, scaler)
+
+    return data, kmeans_model, scaler
+
+def train_kmeans(features_scaled, n_clusters):
+    """
+    Train the k-means clustering model.
+    
+    Args:
+        features_scaled (DataFrame): Scaled feature data
+        n_clusters (int): Number of clusters
+    
+    Returns:
+        KMeans: Trained k-means model
+    """
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    kmeans.fit(features_scaled)
+    return kmeans
+
+def save_models(kmeans_model, scaler):
+    """
+    Save the trained models to disk.
+    
+    Args:
+        kmeans_model (KMeans): Trained k-means model
+        scaler (StandardScaler): Fitted scaler
+    """
+    try:
+        joblib.dump(
+            kmeans_model,
+            "food-recipe-recommender/models/recipe_recommender_model.joblib"
         )
-
-        self._train_knn()
-
-    def _train_knn(self):
-        """
-        Train the k-means model.
-        """
-        # Train k-means
-        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=42)
-        self.kmeans.fit(self.features_scaled)
-
-        # Add cluster assignments to data
-        self.data['cluster'] = self.kmeans.labels_
-
-        # Save the trained model safely
-        try:
-            joblib.dump(
-                self, "food-recipe-recommender/models/recipe_recommender_model.joblib"
-            )
-            joblib.dump(
-                self.scaler, "food-recipe-recommender/models/scaler.joblib"
-            )  # Save scaler too
-            print("Model and scaler saved successfully")
-        except FileNotFoundError as e:
-            print(f"Error saving model: {e}")
-
-    def recommend_recipes(self, desired_time, desired_complexity, n_recommendations=5):
-        """
-        Recommend recipes based on user's preferred time and complexity.
-
-        Args:
-            desired_time (int): Preferred cooking time in minutes.
-            desired_complexity (int): Preferred complexity score.
-
-        Returns:
-            DataFrame: Top K nearest recipes.
-        """
-                # Validate inputs
-        desired_time = validate_numeric_range(desired_time, 0, 300, 'desired cooking time')
-        desired_complexity = validate_numeric_range(
-            desired_complexity, 0, 100, 'desired complexity')
-
-        if not isinstance(n_recommendations, int) or n_recommendations < 1:
-            raise ValueError("Number of recommendations must be a positive integer")
-
-        if self.kmeans is None:
-            raise ValueError("kmeans model is not trained yet.")
-
-        # Load the scaler to ensure consistent transformations
-        try:
-            self.scaler = joblib.load("food-recipe-recommender/models/scaler.joblib")
-        except FileNotFoundError as e:
-            print(f"Error loading scaler: {e}")
-            return None
-
-        # Create DataFrame with feature names before scaling
-        user_input = pd.DataFrame(
-            [[desired_time, desired_complexity]],
-            columns=self.feature_names  # Use same feature names as training
+        joblib.dump(
+            scaler,
+            "food-recipe-recommender/models/scaler.joblib"
         )
+        print("Model and scaler saved successfully")
+    except FileNotFoundError as e:
+        print(f"Error saving model: {e}")
 
-        # Scale user input
-        user_input_scaled = pd.DataFrame(
-            self.scaler.transform(user_input),
-            columns=self.feature_names  # Maintain feature names after scaling
-        )
+def recommend_recipes(data, kmeans_model, scaler, desired_time, desired_complexity, n_recommendations=5):
+    """
+    Recommend recipes based on user's preferred time and complexity.
+    
+    Args:
+        data (DataFrame): Preprocessed recipe data with cluster assignments
+        kmeans_model (KMeans): Trained k-means model
+        scaler (StandardScaler): Fitted scaler
+        desired_time (int): Preferred cooking time in minutes
+        desired_complexity (int): Preferred complexity score
+        n_recommendations (int): Number of recipes to recommend
+    
+    Returns:
+        DataFrame: Top N recommended recipes
+    """
+    # Validate inputs
+    desired_time = validate_numeric_range(desired_time, 0, 30, 'desired cooking time')
+    desired_complexity = validate_numeric_range(
+        desired_complexity, 0, 50, 'desired complexity'
+    )
 
+    if not isinstance(n_recommendations, int) or n_recommendations < 1:
+        raise ValueError("Number of recommendations must be a positive integer")
 
-        # Find nearest cluster
-        cluster = self.kmeans.predict(user_input_scaled)[0]
+    if kmeans_model is None:
+        raise ValueError("kmeans model is not trained yet.")
 
-        # Get recipes from cluster and sort by similarity to preferences
-        cluster_recipes = self.data[self.data['cluster'] == cluster].copy()
+    # Create and scale user input
+    user_input = pd.DataFrame(
+        [[desired_time, desired_complexity]],
+        columns=FEATURE_NAMES
+    )
+    user_input_scaled = pd.DataFrame(
+        scaler.transform(user_input),
+        columns=FEATURE_NAMES
+    )
 
-        # Calculate distance to user preferences for sorting
-        cluster_recipes['similarity_distance'] = cluster_recipes.apply(
-            lambda x: np.sqrt((x['minutes'] - desired_time)**2 +
-                            (x['complexity_score'] - desired_complexity)**2),
-            axis=1
-        )
+    # Find nearest cluster
+    cluster = kmeans_model.predict(user_input_scaled)[0]
 
-        # Sort by similarity and return top n
-        recommendations = cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
-        return recommendations
+    # Get recipes from cluster and calculate similarities
+    cluster_recipes = data[data['cluster'] == cluster].copy()
+    cluster_recipes['similarity_distance'] = cluster_recipes.apply(
+        lambda x: np.sqrt(
+            (x['minutes'] - desired_time)**2 +
+            (x['complexity_score'] - desired_complexity)**2
+        ),
+        axis=1
+    )
+
+    # Return top N recommendations
+    return cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
