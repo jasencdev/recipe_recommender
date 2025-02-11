@@ -19,7 +19,6 @@ def load_model():
     try:
         # Attempt to load the model
         loaded_model = joblib.load(model_path)
-        st.success("Model loaded successfully!")
         return loaded_model
 
     except FileNotFoundError:
@@ -35,20 +34,12 @@ def load_model():
 
 def main():
     """Main script to execute the recipe recommendation system."""
+    loaded_model = load_model()
     st.session_state["recommendations"] = None
     st.session_state["selected_recipe"] = None
-    # Title and a brief description of what our app does
-    st.title("Recipe Recommendation App")
-    st.write(
-        "Welcome! This app will demonstrate recipe recommendations based on desired cooktime and "
-        "complexity. We've taken a large dataset from Kaggle and distilled it down to only highly "
-        "rated recipes with a limited complexity score, a combination of the number of steps and "
-        "ingredients in a recipe."
-    )
 
     # Sidebar: A place to add user input controls
     with st.sidebar:
-        loaded_model = load_model()
         # Creating an input field for the user to enter their name
         user_name = st.text_input("Enter your name:")
 
@@ -75,42 +66,40 @@ def main():
         "recommendations" in st.session_state
         and st.session_state["recommendations"] is None
     ):
+        # Title and a brief description of what our app does
+        st.title("Recipe Recommendation App")
+        st.write(
+            "Welcome! This app will demonstrate recipe recommendations based on desired cooktime and "
+            "complexity. We've taken a large dataset from Kaggle and distilled it down to only highly "
+            "rated recipes with a limited complexity score, a combination of the number of steps and "
+            "ingredients in a recipe."
+        )
         st.write("1. First, let's make sure the model loads. We'll do this for you.")
-
+        if loaded_model:
+            st.success("Model loaded successfully!")
         st.write(
             "2. Open the slider on the left. Enter your name, desired cook time, and complexity."
         )
         if user_name:
-            st.write(f"-- Hello, {user_name}! Nice to meet you.")
+            st.success(f"-- Hello, {user_name}! Nice to meet you.")
 
         if cook_time:
-            st.write(f"-- You have selected {cook_time} completiy for your recipe.")
+            st.success(f"-- You have selected {cook_time} completiy for your recipe.")
 
         if complexity:
-            st.write(f"-- You have selected {complexity} completiy for your recipe.")
+            st.success(f"-- You have selected {complexity} completiy for your recipe.")
         st.write(
             "3. Don't click the Recommend Recipes button until you've completed the above steps."
         )
         if user_name and cook_time and complexity and loaded_model is not None:
-            st.write("Great! Now we can recommend some recipes for you.")
-
-    #    # Check if the model is loaded
-    #     if loaded_model is not None and user_name and cook_time and complexity:
-    #         if st.button("Recommend Recipes"):
-    #             # Get recommendations
-    #             recommendations = loaded_model.recommend_recipes(cook_time, complexity)
-
-    #             # Store recommendations in session state
-    #             st.session_state["recommendations"] = recommendations
-    #             st.session_state["selected_recipe"] = None
-    # Main area of the app: displaying user inputs and some computations
+            st.success("Great! Now we can recommend some recipes for you.")
 
     # Show all recommendations and their details
     if (
         "recommendations" in st.session_state
         and st.session_state["recommendations"] is not None
     ):
-        st.write("# Recommended Recipes")
+        st.title(f"{user_name}'s Recommended Recipes:")
         for _, row in st.session_state["recommendations"].iterrows():
             st.write("---")
             st.write(f"## {row['name'].title()}")
