@@ -17,18 +17,18 @@ from src.modeling import RecipeRecommender  # Import the KNN-based recommendatio
 
 
 def main():
-    """Main script to execute the recipe recommendation system."""
-    ################################
+    """Main script to execute the recipe recommendation model."""
+    #################################
     # Load the Data
-    ################################
+    #################################
     recipes, interactions = load_data()
 
     # Drop missing values in recipes
     recipes_cleaned = recipes.dropna()
 
-    ################################
+    #################################
     # Sanitize the Recipes Data
-    ################################
+    #################################
 
     # Drop recipes with preparation times over 180 minutes
     recipes_cleaned = recipes_cleaned[recipes['minutes'] <= 180]
@@ -36,9 +36,9 @@ def main():
     # Summarize data for an initial understanding
     summary_data(recipes_cleaned, interactions)
 
-    ################################
+    #################################
     # Exploratory Data Analysis
-    ################################
+    #################################
 
     # Generate visualizations
     plot_preparation_time(recipes_cleaned)
@@ -47,18 +47,22 @@ def main():
     plot_correlation_heatmap(recipes_cleaned)
     plot_review_sentiment(interactions)
 
-    ################################
+    #################################
     # Preprocess the Data
-    ################################
+    #################################
 
     # Preprocess the dataset
-    recipes_cleaned, interactions_cleaned = preprocess_data(recipes, interactions)
+    recipes_cleaned, interactions_cleaned = preprocess_data(recipes_cleaned, interactions)
 
     # Visualize Preparation Time vs Number of Ingredients
     plot_prep_time_vs_ingredients(recipes_cleaned)
 
     # Visualize Most Used Ingredients
     plot_most_used_ingredients(recipes_cleaned)
+
+    #################################
+    # Feature Engineering & Selection
+    #################################
 
     # Feature selection
     selected_features = select_features(recipes_cleaned, interactions_cleaned)
@@ -67,8 +71,9 @@ def main():
     print("Selected Features Sample:")
     print(selected_features.head())
 
-    # Sanity check
-    # sanity_check(selected_features)
+    #################################
+    # Modeling
+    #################################
 
     ### 🔹 Integrating KNN-Based Recommendation System ###
 
@@ -88,6 +93,17 @@ def main():
     print("\nRecommended Recipes:")
     print(recommendations[["minutes", "complexity_score", "similarity_distance"]])
 
+    #################################
+    # Split Data for Modeling
+    #################################
+
+    #################################
+    # Validation Checks
+    #################################
+
+    #################################
+    # Train and Evaluate Model
+    #################################
 
 if __name__ == "__main__":
     main()
