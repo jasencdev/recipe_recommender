@@ -1,137 +1,107 @@
-"""Module Imports"""
-
-import joblib
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from src.validation_checks import (
-    validate_input_data,
-    validate_numeric_range,
-    validate_clustering_inputs,
-    validate_recipe_df_schema
-)
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
 
 
-class RecipeRecommender:
-    """ K-Nearest Neighbors based recipe recommender system. """
-    def __init__(self, recipes_df, n_clusters=8):
-        """
-        Initialize the KNN-based recipe recommendation system.
+def optimal_number_of_clusters(recipes_df):
+    """
+    Find the optimal number of clusters using the elbow method.
 
-        Args:
-            recipes_df (DataFrame): Preprocessed recipes DataFrame.
-            k (int): Number of neighbors to use in KNN (default: 5).
-        """
-        validate_recipe_df_schema(recipes_df)
-        validate_input_data(recipes_df)
-        validate_clustering_inputs(n_clusters, len(recipes_df))
+    Args:
+        recipes_df (DataFrame): Data to cluster.
 
+    Returns:
+        int: Optimal number of clusters.
+    """
+    X = recipes_df[['minutes', 'complexity_score']]
 
-        self.data = recipes_df.copy()  # Store dataset
-        self.scaler = StandardScaler()
-        self.kmeans = None  # KNN model will be trained later
-        self.feature_names = ['minutes', 'complexity_score']
-        self.n_clusters = n_clusters
+    # Create a range of clusters
+    clusters = range(2, 20)
 
-        # Ensure required columns exist
-        if not set(self.feature_names).issubset(self.data.columns):
-            raise ValueError(f"Missing required columns: {self.feature_names}")
+    # Create a list to store the inertia values
+    inertia_values = []
 
-        # Prepare data and train model
-        self._prepare_data()
+    # Create a KMeans instance for each value of k
+    for k in clusters:
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(X)
+        inertia_values.append(kmeans.inertia_)
 
-    def _prepare_data(self):
-        """Preprocess the dataset and train the k-means model."""
-        # Select relevant features
-        self.features = self.data[self.feature_names]
+    # Plot WCSS to find the "elbow"
+    plt.figure(figsize=(8, 5))
+    plt.plot(clusters, inertia_values, marker='o', linestyle='--')
+    plt.xlabel("Number of Clusters (k)")
+    plt.ylabel("WCSS (Inertia)")
+    plt.title("Elbow Method to Determine Optimal k")
+    plt.show()
 
-        # Normalize features
-        self.features_scaled = pd.DataFrame(
-            self.scaler.fit_transform(self.features),
-            columns=self.feature_names  # Explicitly set feature names
-        )
+    return clusters, inertia_values
 
-        self._train_knn()
+def optimal_silhouette_score(recipes_df):
+    """
+    Find the optimal number of clusters using the silhouette score.
 
-    def _train_knn(self):
-        """
-        Train the k-means model.
-        """
-        # Train k-means
-        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=42)
-        self.kmeans.fit(self.features_scaled)
+    Args:
+        recipes_df (DataFrame): Data to cluster.
 
-        # Add cluster assignments to data
-        self.data['cluster'] = self.kmeans.labels_
+    Returns:
+        int: Optimal number of clusters.
+    """
 
-        # Save the trained model safely
-        try:
-            joblib.dump(
-                self, "food-recipe-recommender/models/recipe_recommender_model.joblib"
-            )
-            joblib.dump(
-                self.scaler, "food-recipe-recommender/models/scaler.joblib"
-            )  # Save scaler too
-            print("Model and scaler saved successfully")
-        except FileNotFoundError as e:
-            print(f"Error saving model: {e}")
+    X = recipes_df[['minutes', 'complexity_score']]
 
-    def recommend_recipes(self, desired_time, desired_complexity, n_recommendations=5):
-        """
-        Recommend recipes based on user's preferred time and complexity.
+    # Create a range of clusters
+    clusters = range(4, 10)
 
-        Args:
-            desired_time (int): Preferred cooking time in minutes.
-            desired_complexity (int): Preferred complexity score.
+    # Create a list to store the silhouette scores
+    silhouette_scores = []
 
-        Returns:
-            DataFrame: Top K nearest recipes.
-        """
-                # Validate inputs
-        desired_time = validate_numeric_range(desired_time, 0, 300, 'desired cooking time')
-        desired_complexity = validate_numeric_range(
-            desired_complexity, 0, 100, 'desired complexity')
+    # Create a KMeans instance for each value of k
+    for k in clusters:
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        cluster_labels = kmeans.fit_predict(X)
+        silhouette_scores.append(silhouette_score(X, cluster_labels))
 
-        if not isinstance(n_recommendations, int) or n_recommendations < 1:
-            raise ValueError("Number of recommendations must be a positive integer")
+    # Plot silhouette scores
+    plt.figure(figsize=(8, 5))
+    plt.plot(clusters, silhouette_scores, marker='o', linestyle='--')
+    plt.xlabel("Number of Clusters (k)")
+    plt.ylabel("Silhouette Score")
+    plt.title("Silhouette Score to Determine Optimal k")
+    plt.show()
 
-        if self.kmeans is None:
-            raise ValueError("kmeans model is not trained yet.")
+def train_test_split_data(recipes_df):
+    """
+    Split the data into training and testing sets.
 
-        # Load the scaler to ensure consistent transformations
-        try:
-            self.scaler = joblib.load("food-recipe-recommender/models/scaler.joblib")
-        except FileNotFoundError as e:
-            print(f"Error loading scaler: {e}")
-            return None
+    Args:
+        recipes_df (DataFrame): Preprocessed recipes DataFrame.
 
-        # Create DataFrame with feature names before scaling
-        user_input = pd.DataFrame(
-            [[desired_time, desired_complexity]],
-            columns=self.feature_names  # Use same feature names as training
-        )
+    Returns:
+        X_train (DataFrame): Training features.
+        X_test (DataFrame): Testing features.
+        y_train (Series): Training target.
+        y_test (Series): Testing target.
+    """
+    # Select features for clustering
+    X = recipes_df[['minutes', 'complexity_score']]
 
-        # Scale user input
-        user_input_scaled = pd.DataFrame(
-            self.scaler.transform(user_input),
-            columns=self.feature_names  # Maintain feature names after scaling
-        )
+    # Train K-Means
+    kmeans = KMeans(n_clusters=6, random_state=42)
+    recipes_df['cluster'] = kmeans.fit_predict(X)
 
+    # Define feature columns (X) and target (y)
+    X = recipes_df[['minutes', 'complexity_score']]  # Features: Cooking time and complexity
+    y = recipes_df['cluster']  # Target: Cluster labels
 
-        # Find nearest cluster
-        cluster = self.kmeans.predict(user_input_scaled)[0]
+    # Split into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.33,  # 33% of the data will be for testing
+        random_state=42  # Ensures reproducibility
 
-        # Get recipes from cluster and sort by similarity to preferences
-        cluster_recipes = self.data[self.data['cluster'] == cluster].copy()
+    )
 
-        # Calculate distance to user preferences for sorting
-        cluster_recipes['similarity_distance'] = cluster_recipes.apply(
-            lambda x: np.sqrt((x['minutes'] - desired_time)**2 +
-                            (x['complexity_score'] - desired_complexity)**2),
-            axis=1
-        )
-
-        # Sort by similarity and return top n
-        recommendations = cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
-        return recommendations
+    return X_train, X_test, y_train, y_test

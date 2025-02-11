@@ -13,7 +13,13 @@ from src.preprocessing import (
     plot_most_used_ingredients,
 )
 from src.features import select_features
-from src.modeling import RecipeRecommender
+from src.modeling import (
+    optimal_number_of_clusters,
+    optimal_silhouette_score,
+    train_test_split_data
+)
+from src.validation_checks import check_class_distribution, check_data_leakage
+from src.recommender import RecipeRecommender
 
 
 def main():
@@ -31,7 +37,7 @@ def main():
     #################################
 
     # Drop recipes with preparation times over 180 minutes
-    recipes_cleaned = recipes_cleaned[recipes['minutes'] <= 180]
+    recipes_cleaned = recipes_cleaned[recipes_cleaned['minutes'] <= 180]
 
     # Summarize data for an initial understanding
     summary_data(recipes_cleaned, interactions)
@@ -41,11 +47,11 @@ def main():
     #################################
 
     # Generate visualizations
-    #plot_preparation_time(recipes_cleaned)
-    #plot_ratings_distribution(interactions)
-    #plot_ingredients_distribution(recipes_cleaned)
-    #plot_correlation_heatmap(recipes_cleaned)
-    # plot_review_sentiment(interactions)
+    plot_preparation_time(recipes_cleaned)
+    plot_ratings_distribution(interactions)
+    plot_ingredients_distribution(recipes_cleaned)
+    plot_correlation_heatmap(recipes_cleaned)
+    plot_review_sentiment(interactions)
 
     #################################
     # Preprocess the Data
@@ -55,10 +61,10 @@ def main():
     recipes_cleaned, interactions_cleaned = preprocess_data(recipes_cleaned, interactions)
 
     # Visualize Preparation Time vs Number of Ingredients
-    #plot_prep_time_vs_ingredients(recipes_cleaned)
+    plot_prep_time_vs_ingredients(recipes_cleaned)
 
     # Visualize Most Used Ingredients
-    #plot_most_used_ingredients(recipes_cleaned)
+    plot_most_used_ingredients(recipes_cleaned)
 
     #################################
     # Feature Engineering & Selection
@@ -72,16 +78,34 @@ def main():
     print(selected_features.head())
 
     #################################
-    # Split Data for Modeling
+    # Find the Optimal k for K-Means
     #################################
 
-    #################################
-    # Validation Checks
-    #################################
+    # Find the optimal number of clusters using the Elbow Method
+    optimal_number_of_clusters(selected_features)
+    # Using the displayed output, the most efficient number of clusters was determined to be 7.
+
+    # Find the optimal number of clusters using the Silhouette Score
+    optimal_silhouette_score(selected_features)
+    # Using the displayed output, the most efficient number of clusters was determined to be 6.
 
     #################################
-    # Train and Evaluate Model
+    # Train Modeling
     #################################
+
+    X_train, X_test, y_train, y_test = train_test_split_data(selected_features)
+
+    #################################
+    # Evaluation/Validation Checks
+    #################################
+
+    # 1. Check Class Distribution
+    print("\n--- Class Distribution Check ---")
+    check_class_distribution(y_train, y_test)
+
+    # 2. Check Data Leakage
+    print("\n--- Data Leakage Check ---")
+    check_data_leakage(X_train, X_test)
 
     #################################
     # Build the Production Pipeline
