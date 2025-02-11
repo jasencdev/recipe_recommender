@@ -4,6 +4,11 @@ from src.preprocessing import (
     load_data,
     summary_data,
     preprocess_data,
+    plot_preparation_time,
+    plot_ratings_distribution,
+    plot_ingredients_distribution,
+    plot_correlation_heatmap,
+    plot_review_sentiment,
     plot_prep_time_vs_ingredients,
     plot_most_used_ingredients,
 )
@@ -13,11 +18,38 @@ from src.modeling import RecipeRecommender  # Import the KNN-based recommendatio
 
 def main():
     """Main script to execute the recipe recommendation system."""
-    # Load the dataset
+    ################################
+    # Load the Data
+    ################################
     recipes, interactions = load_data()
 
+    # Drop missing values in recipes
+    recipes_cleaned = recipes.dropna()
+
+    ################################
+    # Sanitize the Recipes Data
+    ################################
+
+    # Drop recipes with preparation times over 180 minutes
+    recipes_cleaned = recipes_cleaned[recipes['minutes'] <= 180]
+
     # Summarize data for an initial understanding
-    summary_data(recipes, interactions)
+    summary_data(recipes_cleaned, interactions)
+
+    ################################
+    # Exploratory Data Analysis
+    ################################
+
+    # Generate visualizations
+    plot_preparation_time(recipes_cleaned)
+    plot_ratings_distribution(interactions)
+    plot_ingredients_distribution(recipes_cleaned)
+    plot_correlation_heatmap(recipes_cleaned)
+    plot_review_sentiment(interactions)
+
+    ################################
+    # Preprocess the Data
+    ################################
 
     # Preprocess the dataset
     recipes_cleaned, interactions_cleaned = preprocess_data(recipes, interactions)

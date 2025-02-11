@@ -1,5 +1,6 @@
 altair==5.5.0
 attrs==25.1.0
+black==25.1.0
 blinker==1.9.0
 cachetools==5.5.1
 certifi==2025.1.31
@@ -20,11 +21,14 @@ markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 matplotlib==3.10.0
 mdurl==0.1.2
+mypy-extensions==1.0.0
 narwhals==1.25.2
 numpy==2.2.2
 packaging==24.2
 pandas==2.2.3
+pathspec==0.12.1
 pillow==11.1.0
+platformdirs==4.3.6
 protobuf==5.29.3
 pyarrow==19.0.0
 pydeck==0.9.1
@@ -49,3 +53,4 @@ tornado==6.4.2
 typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
+wordcloud==1.9.4
