@@ -33,20 +33,28 @@ def load_data():
 def summary_data(recipes, interactions):
     """summarize the data for humans"""
 
+    # Summary statistics
+    print("\nPrinting the column names for recipes:")
+    print(recipes.columns)
+    print("\nPrinting the column names for interactions:")
+    print(interactions.columns)
+
     # Display initial rows
+    print("\nDisplaying the first few rows of the recipes dataset:")
     print(recipes.head())
+    print("\nDisplaying the first few rows of the interactions dataset:")
     print(interactions.head())
 
     # Check data structure
+    print("\nChecking the recipes data structure:")
     print(recipes.info())
+    print("\nChecking the interactions data structure:")
     print(interactions.info())
 
-    # Summary statistics
-    print(recipes.describe())
-    print(interactions.describe())
-
     # Check for null values
+    print("\nChecking recipes or missing values:")
     print(recipes.isnull().sum())
+    print("\nChecking interactions for missing values:")
     print(interactions.isnull().sum())
 
 
