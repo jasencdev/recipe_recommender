@@ -63,7 +63,7 @@ def plot_preparation_time(recipes):
     Plots histogram of preparation time
     """
 
-    plt.hist(recipes['minutes'], bins=50, edgecolor='blue')
+    plt.hist(recipes['minutes'], bins=18, edgecolor='blue')
     plt.title('Distribution of Preparation Time (minutes)')
     plt.xlabel('Preparation Time (minutes)')
     plt.ylabel('Frequency')
