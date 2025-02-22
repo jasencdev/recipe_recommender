@@ -68,10 +68,10 @@ class RecipeRecommender:
         # Save the trained model safely
         try:
             joblib.dump(
-                self, "food-recipe-recommender/models/recipe_recommender_model.joblib"
+                self, "/models/recipe_recommender_model.joblib"
             )
             joblib.dump(
-                self.scaler, "food-recipe-recommender/models/scaler.joblib"
+                self.scaler, "/models/scaler.joblib"
             )  # Save scaler too
             print("Model and scaler saved successfully")
         except FileNotFoundError as e:
@@ -101,7 +101,7 @@ class RecipeRecommender:
 
         # Load the scaler to ensure consistent transformations
         try:
-            self.scaler = joblib.load("food-recipe-recommender/models/scaler.joblib")
+            self.scaler = joblib.load("models/scaler.joblib")
         except FileNotFoundError as e:
             print(f"Error loading scaler: {e}")
             return None
