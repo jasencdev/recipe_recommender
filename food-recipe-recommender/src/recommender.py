@@ -52,9 +52,9 @@ class RecipeRecommender:
             columns=self.feature_names  # Explicitly set feature names
         )
 
-        self._train_knn()
+        self._train_kmeans()
 
-    def _train_knn(self):
+    def _train_kmeans(self):
         """
         Train the k-means model.
         """
