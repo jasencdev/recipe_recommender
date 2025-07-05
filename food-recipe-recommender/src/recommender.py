@@ -135,3 +135,43 @@ class RecipeRecommender:
         # Sort by similarity and return top n
         recommendations = cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
         return recommendations
+
+    def search_recipes(self, search_query, n_results=10):
+        """
+        Search recipes by name or ingredients.
+        
+        Args:
+            search_query (str): Query string to search for in recipe names and ingredients.
+            n_results (int): Maximum number of results to return.
+            
+        Returns:
+            DataFrame: Matching recipes sorted by relevance.
+        """
+        if not isinstance(search_query, str) or not search_query.strip():
+            raise ValueError("Search query must be a non-empty string")
+            
+        if not isinstance(n_results, int) or n_results < 1:
+            raise ValueError("Number of results must be a positive integer")
+            
+        search_query = search_query.lower().strip()
+        
+        # Search in recipe names and ingredients
+        matches = self.data[
+            self.data['name'].str.lower().str.contains(search_query, na=False) |
+            self.data['ingredients'].str.lower().str.contains(search_query, na=False)
+        ].copy()
+        
+        if matches.empty:
+            return matches
+            
+        # Score matches by relevance (name matches get higher score)
+        matches['relevance_score'] = 0
+        name_matches = matches['name'].str.lower().str.contains(search_query, na=False)
+        matches.loc[name_matches, 'relevance_score'] += 2
+        
+        ingredient_matches = matches['ingredients'].str.lower().str.contains(search_query, na=False)
+        matches.loc[ingredient_matches, 'relevance_score'] += 1
+        
+        # Sort by relevance score and return top n
+        search_results = matches.nlargest(n_results, 'relevance_score')
+        return search_results
