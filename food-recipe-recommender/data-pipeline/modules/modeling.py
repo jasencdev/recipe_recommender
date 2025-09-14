@@ -14,7 +14,7 @@ def optimal_number_of_clusters(recipes_df):
     Returns:
         int: Optimal number of clusters.
     """
-    X = recipes_df[['minutes', 'complexity_score']]
+    X = recipes_df[["minutes", "complexity_score"]]
 
     # Create a range of clusters
     clusters = range(2, 20)
@@ -30,13 +30,14 @@ def optimal_number_of_clusters(recipes_df):
 
     # Plot WCSS to find the "elbow"
     plt.figure(figsize=(8, 5))
-    plt.plot(clusters, inertia_values, marker='o', linestyle='--')
+    plt.plot(clusters, inertia_values, marker="o", linestyle="--")
     plt.xlabel("Number of Clusters (k)")
     plt.ylabel("WCSS (Inertia)")
     plt.title("Elbow Method to Determine Optimal k")
     plt.show()
 
     return clusters, inertia_values
+
 
 def optimal_silhouette_score(recipes_df):
     """
@@ -49,7 +50,7 @@ def optimal_silhouette_score(recipes_df):
         int: Optimal number of clusters.
     """
 
-    X = recipes_df[['minutes', 'complexity_score']]
+    X = recipes_df[["minutes", "complexity_score"]]
 
     # Create a range of clusters
     clusters = range(4, 10)
@@ -65,11 +66,12 @@ def optimal_silhouette_score(recipes_df):
 
     # Plot silhouette scores
     plt.figure(figsize=(8, 5))
-    plt.plot(clusters, silhouette_scores, marker='o', linestyle='--')
+    plt.plot(clusters, silhouette_scores, marker="o", linestyle="--")
     plt.xlabel("Number of Clusters (k)")
     plt.ylabel("Silhouette Score")
     plt.title("Silhouette Score to Determine Optimal k")
     plt.show()
+
 
 def train_test_split_data(recipes_df):
     """
@@ -85,23 +87,24 @@ def train_test_split_data(recipes_df):
         y_test (Series): Testing target.
     """
     # Select features for clustering
-    X = recipes_df[['minutes', 'complexity_score']]
+    X = recipes_df[["minutes", "complexity_score"]]
 
     # Train K-Means
     kmeans = KMeans(n_clusters=6, random_state=42)
-    recipes_df['cluster'] = kmeans.fit_predict(X)
+    recipes_df["cluster"] = kmeans.fit_predict(X)
 
     # Define feature columns (X) and target (y)
-    X = recipes_df[['minutes', 'complexity_score']]  # Features: Cooking time and complexity
-    y = recipes_df['cluster']  # Target: Cluster labels
+    X = recipes_df[
+        ["minutes", "complexity_score"]
+    ]  # Features: Cooking time and complexity
+    y = recipes_df["cluster"]  # Target: Cluster labels
 
     # Split into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
         test_size=0.33,  # 33% of the data will be for testing
-        random_state=42  # Ensures reproducibility
-
+        random_state=42,  # Ensures reproducibility
     )
 
     return X_train, X_test, y_train, y_test
