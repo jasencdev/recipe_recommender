@@ -40,4 +40,4 @@ EXPOSE 8080
 WORKDIR /app/food-recipe-recommender/app
 
 # Start with Gunicorn (uv used at build time)
-CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
+CMD ["uv", "run", "gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
