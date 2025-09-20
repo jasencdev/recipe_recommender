@@ -10,21 +10,23 @@ RUN npm run build
 FROM python:3.11-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    ENV=production
+    ENV=production \
+    UV_LINK_MODE=copy \
+    PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /app
 
 # System deps (git optional), and clean up apt lists afterward
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    build-essential curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
 COPY food-recipe-recommender ./food-recipe-recommender
 
-# Install Python deps
-RUN wget -qO- https://astral.sh/uv/install.sh | sh \
+# Install uv and Python deps (system install)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --yes \
     && uv sync
 
 # Copy built frontend into Flask templates/static
@@ -37,6 +39,5 @@ EXPOSE 8080
 
 WORKDIR /app/food-recipe-recommender/app
 
-# Start with Gunicorn
-CMD ["uv", "run", "gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
-
+# Start with Gunicorn (uv used at build time)
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
