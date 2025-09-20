@@ -26,7 +26,7 @@ COPY pyproject.toml uv.lock ./
 COPY food-recipe-recommender ./food-recipe-recommender
 
 # Install uv and Python deps (system install)
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --yes \
+RUN pip install uv \
     && uv sync
 
 # Copy built frontend into Flask templates/static
