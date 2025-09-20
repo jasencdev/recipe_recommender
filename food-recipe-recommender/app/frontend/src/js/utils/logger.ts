@@ -8,11 +8,10 @@ type LogFn = (...args: any[]) => void;
 const noop: LogFn = () => {};
 
 const logger = {
-  debug: isProd ? noop : ((...args) => console.debug(...args)),
-  info: (...args) => console.info(...args),
-  warn: (...args) => console.warn(...args),
-  error: (...args) => console.error(...args),
+  debug: isProd ? noop : ((...args: unknown[]) => console.debug(...args)),
+  info: (...args: unknown[]) => console.info(...args),
+  warn: (...args: unknown[]) => console.warn(...args),
+  error: (...args: unknown[]) => console.error(...args),
 };
 
 export default logger;
-

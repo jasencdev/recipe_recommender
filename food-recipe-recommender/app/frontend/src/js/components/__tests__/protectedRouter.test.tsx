@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AuthProvider from '../AuthContext';
@@ -12,7 +12,7 @@ import { getAuthStatus } from '../../services/api';
 
 describe('ProtectedRoute', () => {
   it('redirects to /login when unauthenticated', async () => {
-    (getAuthStatus as unknown as vi.Mock).mockRejectedValue(new Error('unauthorized'));
+    (getAuthStatus as unknown as Mock).mockRejectedValue(new Error('unauthorized'));
 
     render(
       <MemoryRouter initialEntries={["/"]}>
@@ -31,7 +31,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('renders children when authenticated', async () => {
-    (getAuthStatus as unknown as vi.Mock).mockResolvedValue({
+    (getAuthStatus as unknown as Mock).mockResolvedValue({
       authenticated: true,
       user: { id: 1, email: 'tester@example.com' },
     });
@@ -52,4 +52,3 @@ describe('ProtectedRoute', () => {
     });
   });
 });
-

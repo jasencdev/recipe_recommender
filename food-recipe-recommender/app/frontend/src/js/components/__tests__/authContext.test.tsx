@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import AuthProvider, { useAuth } from '../AuthContext';
 
@@ -20,7 +20,7 @@ function Probe() {
 
 describe('AuthProvider', () => {
   it('sets user on successful auth status', async () => {
-    (getAuthStatus as unknown as vi.Mock).mockResolvedValue({
+    (getAuthStatus as unknown as Mock).mockResolvedValue({
       authenticated: true,
       user: { id: 1, email: 'tester@example.com' },
     });
@@ -39,7 +39,7 @@ describe('AuthProvider', () => {
   });
 
   it('clears user on failed auth status', async () => {
-    (getAuthStatus as unknown as vi.Mock).mockRejectedValue(new Error('unauthorized'));
+    (getAuthStatus as unknown as Mock).mockRejectedValue(new Error('unauthorized'));
 
     render(
       <AuthProvider>
@@ -53,4 +53,3 @@ describe('AuthProvider', () => {
     });
   });
 });
-

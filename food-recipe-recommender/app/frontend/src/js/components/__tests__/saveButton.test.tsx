@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SaveButton from '../saveButton';
 
@@ -11,8 +11,8 @@ import { isRecipeSaved, toggleSaveRecipe } from '../../services/api';
 
 describe('SaveButton', () => {
   it('shows initial saved state and toggles on click', async () => {
-    (isRecipeSaved as unknown as vi.Mock).mockResolvedValue(false);
-    (toggleSaveRecipe as unknown as vi.Mock).mockResolvedValue(true);
+    (isRecipeSaved as unknown as Mock).mockResolvedValue(false);
+    (toggleSaveRecipe as unknown as Mock).mockResolvedValue(true);
 
     const onSaveChange = vi.fn();
     render(<SaveButton recipeId="123" onSaveChange={onSaveChange} />);

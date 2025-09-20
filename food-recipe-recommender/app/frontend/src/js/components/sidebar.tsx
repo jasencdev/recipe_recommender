@@ -77,7 +77,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     className,
     children,
     ...props
-  }: { current?: boolean; className?: string; children: React.ReactNode } & (
+  }: { current?: boolean; className?: string; children: React.ReactNode; as?: React.ElementType } & (
     | ({ href?: never } & Omit<Headless.ButtonProps, 'as' | 'className'>)
     | ({ href: string } & Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>)
   ),

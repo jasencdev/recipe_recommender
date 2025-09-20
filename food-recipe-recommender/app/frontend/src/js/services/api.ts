@@ -144,11 +144,11 @@ export const getSavedRecipeIds = async (forceRefresh = false): Promise<Set<strin
   }
 
   // Start new request and cache the promise
-  pendingRequest = (async () => {
+  pendingRequest = (async (): Promise<Set<string>> => {
     try {
       const response = await api.get('/saved-recipes');
       // Updated to handle the new simplified response format that just returns recipe IDs
-      const recipeIds = new Set(response.data.recipes.map((recipe: {id: string}) => recipe.id));
+      const recipeIds = new Set<string>(response.data.recipes.map((recipe: {id: string}) => recipe.id as string));
 
       savedRecipeCache = recipeIds;
       cacheLastUpdated = Date.now();
@@ -159,7 +159,7 @@ export const getSavedRecipeIds = async (forceRefresh = false): Promise<Set<strin
       const err = error as AxiosError;
       console.error("API error fetching saved recipe IDs:", err.message);
       // Return empty set if error, don't throw to avoid breaking UI
-      return new Set();
+      return new Set<string>();
     } finally {
       // Clear pending request when done
       pendingRequest = null;

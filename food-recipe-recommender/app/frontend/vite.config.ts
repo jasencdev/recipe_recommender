@@ -13,23 +13,5 @@ export default defineConfig({
         changeOrigin: true
       }
     }
-  },
-  // Vitest configuration for unit tests
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./src/setupTests.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov'],
-      exclude: [
-        'eslint.config.js',
-        'vite.config.ts',
-        'src/vite-env.d.ts',
-        'src/js/main.tsx',
-        'src/js/App.tsx',
-        'src/js/pages/**',
-      ],
-    }
   }
 })

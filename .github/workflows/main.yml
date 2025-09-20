@@ -67,10 +67,33 @@ jobs:
       - name: Run vitest with coverage
         run: npm run test:run
 
+      - name: Build frontend for production
+        run: npm run build
+
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: food-recipe-recommender/app/frontend/coverage/lcov.info
           flags: frontend
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: recipe-recommender:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 

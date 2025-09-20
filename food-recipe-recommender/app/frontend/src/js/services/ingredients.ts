@@ -69,7 +69,7 @@ export function scaleIngredient(ingredient: ParsedIngredient, multiplier: number
 
 // Format scaled ingredient back to readable string
 export function formatIngredient(ingredient: ParsedIngredient): string {
-  const { quantity, unit, name, preparation } = ingredient;
+  const { quantity, unit, name, preparation: _preparation } = ingredient;
 
   // Format quantity (handle fractions nicely)
   let quantityStr: string;
