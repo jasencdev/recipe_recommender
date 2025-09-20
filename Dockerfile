@@ -25,7 +25,8 @@ COPY food-recipe-recommender ./food-recipe-recommender
 
 # Install Python deps
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -e .
+    && pip install --no-cache-dir uv \
+    && uv sync
 
 # Copy built frontend into Flask templates/static
 COPY --from=frontend-build /app/frontend/dist/index.html /app/food-recipe-recommender/app/templates/index.html
@@ -38,5 +39,5 @@ EXPOSE 8080
 WORKDIR /app/food-recipe-recommender/app
 
 # Start with Gunicorn
-CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
+CMD ["uv", "run", "gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
 

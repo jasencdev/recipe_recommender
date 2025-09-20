@@ -21,7 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install uv
+          uv sync
 
       - name: Run tests with coverage
         env:
@@ -29,7 +30,7 @@ jobs:
           ENV: test
           SECRET_KEY: test-ci
         run: |
-          pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
+          uv run pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
