@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
+          wget -qO- https://astral.sh/uv/install.sh | sh
           uv sync
 
       - name: Run pytest with coverage
