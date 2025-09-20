@@ -68,7 +68,8 @@ except Exception as e:
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'http://localhost:5173/login'  # Redirect to frontend login page
+# Redirect to frontend login route served by this app (works in dev/prod)
+login_manager.login_view = '/login'
 login_manager.login_message = 'Please log in to access this page.'
 
 # Database Models
@@ -981,6 +982,11 @@ def remove_saved_recipe(recipe_id):
 @login_required
 def home():
     '''Home route that returns a welcome message.'''
+    return render_template("index.html")
+
+# Serve SPA login route so Flask-Login redirects work in production
+@app.route('/login')
+def login_page():
     return render_template("index.html")
 
 # Entry point: ensure all routes are registered before running the app
