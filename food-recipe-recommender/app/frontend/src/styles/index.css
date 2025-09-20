@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: Inter, sans-serif;
+  --font-sans--font-feature-settings: 'cv11';
+}

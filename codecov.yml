@@ -1,0 +1,30 @@
+coverage:
+  status:
+    project:
+      backend:
+        target: 80%
+        threshold: 2%
+        flags:
+          - backend
+      frontend:
+        target: 90%
+        threshold: 1%
+        flags:
+          - frontend
+    patch:
+      default:
+        target: 90%
+        threshold: 1%
+
+comment:
+  layout: "reach, diff, flags, files"
+  require_changes: false
+  behavior: default
+
+flags:
+  backend:
+    paths:
+      - food-recipe-recommender/app/
+  frontend:
+    paths:
+      - food-recipe-recommender/app/frontend/

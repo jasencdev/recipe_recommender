@@ -1,0 +1,11 @@
+.venv/
+__pycache__
+.mypy_cache
+.pytest_cache
+.DS_Store
+.ruff_cache/ 
+database.db
+.claude
+*.env*
+food-recipe-recommender/app/.env
+food-recipe-recommender/app/.env
