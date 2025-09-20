@@ -25,9 +25,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml uv.lock ./
 COPY food-recipe-recommender ./food-recipe-recommender
 
-# Install uv and Python deps (system install)
-RUN pip install uv \
-    && uv sync
+# Install uv and Python deps into system site-packages
+RUN pip install --no-cache-dir uv \
+    && uv pip install --system -e .
 
 # Copy built frontend into Flask templates/static
 COPY --from=frontend-build /app/frontend/dist/index.html /app/food-recipe-recommender/app/templates/index.html
@@ -39,5 +39,5 @@ EXPOSE 8080
 
 WORKDIR /app/food-recipe-recommender/app
 
-# Start with Gunicorn (uv used at build time)
-CMD ["uv", "run", "gunicorn", "-w", "3", "-b", "0.0.0.0:${PORT}", "app:app"]
+# Start with Gunicorn; use shell form for env var expansion
+CMD ["sh","-c","uv run gunicorn -w 3 -b 0.0.0.0:${PORT:-8080} app:app"]
