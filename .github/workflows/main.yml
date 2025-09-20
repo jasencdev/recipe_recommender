@@ -33,7 +33,7 @@ jobs:
           ENV: test
           SECRET_KEY: test-ci
           # DATABASE_URL is set by tests/conftest.py if not present; set explicitly for safety
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
         run: |
           pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
 
