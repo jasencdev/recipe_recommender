@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, flask ]
+  pull_request:
+    branches: [ main, flask ]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run pytest with coverage
+        env:
+          LOG_LEVEL: INFO
+          ENV: test
+          SECRET_KEY: test-ci
+          # DATABASE_URL is set by tests/conftest.py if not present; set explicitly for safety
+          DATABASE_URL: sqlite:///:memory:
+        run: |
+          pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: food-recipe-recommender/app/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: food-recipe-recommender/app/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run vitest with coverage
+        run: npm run test:run
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: food-recipe-recommender/app/frontend/coverage/lcov.info
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
+

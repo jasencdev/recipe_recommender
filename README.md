@@ -5,8 +5,6 @@ limited time and patience on their hands.
 
 Dataset: Food.com Recipes and Interactions
 
-This was the problem I chose as part of Quantic's Data Science Foundations Capstone.
-
 Live Model: [click here](https://recipe-recommender.jasenc.dev/)
 
 ```text

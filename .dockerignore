@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+node_modules
+food-recipe-recommender/app/frontend/node_modules
+food-recipe-recommender/app/frontend/coverage
+food-recipe-recommender/data
+*.env*
+*.log
+tests
+coverage*
+dist
