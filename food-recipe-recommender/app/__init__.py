@@ -152,6 +152,25 @@ def create_app() -> Flask:
     try:
         with app.app_context():
             db.create_all()
+            # One-time lightweight schema migration for password_hash length on Postgres
+            try:
+                from sqlalchemy import text
+                uri = (app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
+                if uri.startswith('postgres'):  # postgres or postgresql
+                    with db.engine.begin() as conn:  # type: ignore[attr-defined]
+                        current_len = conn.execute(text(
+                            """
+                            SELECT character_maximum_length
+                            FROM information_schema.columns
+                            WHERE table_name = 'user' AND column_name = 'password_hash'
+                            """
+                        )).scalar()
+                        if current_len is not None and int(current_len) < 200:
+                            conn.execute(text('ALTER TABLE "user" ALTER COLUMN password_hash TYPE VARCHAR(255)'))
+                            logging.getLogger('app').info('[startup] migrated password_hash to VARCHAR(255)')
+            except Exception:
+                # Best-effort migration; ignore if it fails
+                pass
     except Exception:
         pass
 
