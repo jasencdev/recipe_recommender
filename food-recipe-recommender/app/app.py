@@ -121,8 +121,10 @@ def send_password_reset_email(to_email: str, token: str) -> bool:
         return False
 
 
-# Create default app instance for legacy WSGI entry: app:app
-app = app_pkg.create_app()
+# Create default app instance only for test/CI legacy flows
+import os as _os
+if (_os.getenv('ENV', 'development') or '').lower() in {'test', 'ci'}:
+    app = app_pkg.create_app()
 
 # Expose the factory for servers/CLIs that use factory-mode (e.g., Waitress --call, Flask --app app:create_app)
 def create_app():  # pragma: no cover

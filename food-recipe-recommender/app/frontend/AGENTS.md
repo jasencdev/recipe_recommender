@@ -20,7 +20,7 @@ src/
 ```
 
 ## Build, Test, and Development Commands
-- `npm run dev`: Start Vite dev server with HMR. Proxies `/api` to `http://127.0.0.1:5000`.
+- `npm run dev`: Start Vite dev server with HMR. Proxies `/api` to `http://127.0.0.1:8080`.
 - `npm run build`: Type-check (`tsc -b`) and build production assets with Vite.
 - `npm run preview`: Serve the production build locally to validate artifacts.
 - `npm run lint`: Run ESLint for TypeScript/React (hooks + refresh plugins).
@@ -65,7 +65,7 @@ Notes:
 
 ## Local Development Workflow
 1) Install dependencies: `npm install`.
-2) Start Flask backend (default `http://127.0.0.1:5000`).
+2) Start Flask backend (default `http://127.0.0.1:8080`).
 3) Run frontend: `npm run dev` and open the served URL.
 4) Commit small, focused changes; include screenshots for UI.
 5) Before PR: `npm run lint && npm run build && npm run preview`.

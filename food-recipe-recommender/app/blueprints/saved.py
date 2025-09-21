@@ -34,13 +34,14 @@ def save_recipe() -> Tuple[Response, int]:
         return jsonify({'error': 'recipe_id cannot be empty'}), 400
     try:
         # Validate recipe exists in model data (match monolithic behavior)
-        recommender = current_app.config.get('RECOMMENDER')
-        if not recommender:
-            try:
-                import app as app_module  # type: ignore
+        try:
+            import app as app_module  # type: ignore
+            if hasattr(app_module, 'recipe_recommender'):
                 recommender = getattr(app_module, 'recipe_recommender', None)
-            except Exception:
-                recommender = None
+            else:
+                recommender = current_app.config.get('RECOMMENDER')
+        except Exception:
+            recommender = current_app.config.get('RECOMMENDER')
         if recommender and getattr(recommender, 'data', None) is not None:
             import pandas as _pd  # type: ignore
             data = recommender.data

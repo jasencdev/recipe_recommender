@@ -6,15 +6,19 @@ from ..utils import parse_list_field
 recipes_bp = Blueprint('recipes', __name__)
 
 
+def _resolve_recommender():
+    try:
+        import app as app_module  # type: ignore
+        if hasattr(app_module, 'recipe_recommender'):
+            return getattr(app_module, 'recipe_recommender')
+    except Exception:
+        pass
+    return current_app.config.get('RECOMMENDER')
+
+
 @recipes_bp.get('/api/search')
 def search() -> Tuple[Response, int]:
-    recommender = current_app.config.get('RECOMMENDER')
-    if not recommender:
-        try:
-            import app as app_module  # type: ignore
-            recommender = getattr(app_module, 'recipe_recommender', None)
-        except Exception:
-            recommender = None
+    recommender = _resolve_recommender()
     if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
 
@@ -92,13 +96,7 @@ def search() -> Tuple[Response, int]:
 
 @recipes_bp.get('/api/recipes/<recipe_id>')
 def get_recipe(recipe_id: str) -> Tuple[Response, int]:
-    recommender = current_app.config.get('RECOMMENDER')
-    if not recommender:
-        try:
-            import app as app_module  # type: ignore
-            recommender = getattr(app_module, 'recipe_recommender', None)
-        except Exception:
-            recommender = None
+    recommender = _resolve_recommender()
     if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
     try:
@@ -155,13 +153,7 @@ def get_recipe(recipe_id: str) -> Tuple[Response, int]:
 
 @recipes_bp.get('/api/recipes/<recipe_id>/enriched-ingredients')
 def enriched_ingredients(recipe_id: str) -> Tuple[Response, int]:
-    recommender = current_app.config.get('RECOMMENDER')
-    if not recommender:
-        try:
-            import app as app_module  # type: ignore
-            recommender = getattr(app_module, 'recipe_recommender', None)
-        except Exception:
-            recommender = None
+    recommender = _resolve_recommender()
     if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
     try:
