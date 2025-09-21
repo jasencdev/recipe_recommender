@@ -14,6 +14,11 @@ Starting the server
 - Waitress (factory): `uv run waitress-serve --listen=127.0.0.1:8080 --call 'app:create_app'`
 - Docker: `make docker-build && make docker-run`
 
+Model artifact
+- Expected path in image: `/app/food-recipe-recommender/models/recipe_recommender_model.joblib`.
+- Ensure the file exists under `food-recipe-recommender/models/` before building.
+- To mount a model at runtime, set `MODEL_PATH=/models/model.joblib` and bind mount the file into the container.
+
 Admin endpoints
 - GET `/api/admin/status/email`
   - Returns: `resend_available`, `has_api_key`, `email_from`, `frontend_base_url`, `environment`.

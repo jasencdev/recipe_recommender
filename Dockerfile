@@ -34,7 +34,8 @@ COPY --from=frontend-build /app/frontend/dist/index.html /app/food-recipe-recomm
 COPY --from=frontend-build /app/frontend/dist/assets /app/food-recipe-recommender/app/static/assets
 
 # Port for Railway (uses $PORT). Default to 8080 for local
-ENV PORT=8080
+ENV PORT=8080 \
+    MODEL_PATH=/app/food-recipe-recommender/models/recipe_recommender_model.joblib
 EXPOSE 8080
 
 WORKDIR /app/food-recipe-recommender/app

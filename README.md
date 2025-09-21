@@ -8,6 +8,9 @@
   - Build: `make docker-build`
   - Run: `make docker-run` (loads `food-recipe-recommender/app/.env` if present)
   - Container entrypoint serves `--call 'app:create_app'` via Waitress.
+  - Model: ensure `food-recipe-recommender/models/recipe_recommender_model.joblib` exists in the repo before building.
+    - Alternatively, mount and override path:
+      `docker run -p 8080:8080 -e PORT=8080 -e MODEL_PATH=/models/model.joblib -v /abs/path/to/model.joblib:/models/model.joblib:ro IMAGE:TAG`
 
 - Admin endpoints (require `X-Admin-Token`):
   - Status: `GET /api/admin/status/email`
@@ -27,14 +30,14 @@
 - Live integration tests (hit running backend):
   - Start the Flask server locally
   - Run: `LIVE_API=1 uv run pytest -q -p no:cacheprovider tests/test_integration_live.py`
-  - Optional: override base URL, e.g. `API_BASE_URL=http://localhost:5000/api`
+  - Optional: override base URL, e.g. `API_BASE_URL=http://localhost:8080/api`
 
 - Makefile shortcuts (from repo root):
   - `make test` — backend unit tests
   - `make test-cov` — backend tests with coverage
   - `make test-frontend` — frontend tests (watch)
   - `make test-frontend-cov` — frontend tests with coverage
-  - `make test-live` — live integration tests (override API with `make test-live API=http://localhost:5000/api`)
+  - `make test-live` — live integration tests (override API with `make test-live API=http://localhost:8080/api`)
 
 - CI & Coverage:
   - GitHub Actions runs backend and frontend tests on pushes/PRs.
