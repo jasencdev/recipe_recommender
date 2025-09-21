@@ -1,5 +1,7 @@
 """Module Imports"""
 
+from pathlib import Path
+
 import joblib
 import pandas as pd
 import numpy as np
@@ -11,6 +13,9 @@ from src.validation_checks import (
     validate_clustering_inputs,
     validate_recipe_df_schema
 )
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+MODELS_DIR = BASE_DIR / "models"
 
 
 class RecipeRecommender:
@@ -67,11 +72,12 @@ class RecipeRecommender:
 
         # Save the trained model safely
         try:
+            MODELS_DIR.mkdir(parents=True, exist_ok=True)
             joblib.dump(
-                self, "/models/recipe_recommender_model.joblib"
+                self, MODELS_DIR / "recipe_recommender_model.joblib"
             )
             joblib.dump(
-                self.scaler, "/models/scaler.joblib"
+                self.scaler, MODELS_DIR / "scaler.joblib"
             )  # Save scaler too
             print("Model and scaler saved successfully")
         except FileNotFoundError as e:
@@ -101,7 +107,8 @@ class RecipeRecommender:
 
         # Load the scaler to ensure consistent transformations
         try:
-            self.scaler = joblib.load("models/scaler.joblib")
+            scaler_path = MODELS_DIR / "scaler.joblib"
+            self.scaler = joblib.load(scaler_path)
         except FileNotFoundError as e:
             print(f"Error loading scaler: {e}")
             return None
