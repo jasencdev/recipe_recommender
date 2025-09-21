@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, Tuple
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, current_app
+from sqlalchemy import func
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from .. import db
@@ -20,6 +21,7 @@ def register() -> Tuple[Response, int]:
         return jsonify({'success': False, 'message': 'No data provided'}), 400
 
     email = data.get('email', '').strip()
+    email_norm = email.lower()
     password = data.get('password', '').strip()
     full_name = data.get('full_name', '').strip()
 
@@ -30,12 +32,14 @@ def register() -> Tuple[Response, int]:
         return jsonify({'success': False, 'message': 'Password must be at least 8 characters'}), 400
     try:
         db.create_all()
-        if User.query.filter_by(email_address=email).first():
+        # Block duplicates regardless of casing
+        if User.query.filter(func.lower(User.email_address) == email_norm).first():
             logger.info("[register] attempt with existing email | email=%s", email)
             return jsonify({'success': False, 'message': 'Email already registered'}), 400
 
         user = User(
-            email_address=email,
+            # Store normalized lower-case email for consistency
+            email_address=email_norm,
             full_name=full_name,
             country=data.get('country'),
             newsletter_signup=data.get('newsletter_signup', False)
@@ -60,7 +64,8 @@ def login() -> Tuple[Response, int]:
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'message': 'No data provided'}), 400
-    user = User.query.filter_by(email_address=data.get('email')).first()
+    submitted_email = (data.get('email') or '').strip().lower()
+    user = User.query.filter(func.lower(User.email_address) == submitted_email).first()
     if user and check_password_hash(user.password_hash, data.get('password', '')):
         login_user(user)
         return jsonify({'success': True, 'user': user.email_address})
@@ -106,7 +111,8 @@ def forgot_password():
             except Exception:
                 db.session.rollback()
             return generic_response
-        user = User.query.filter_by(email_address=email_norm).first()
+        # Case-insensitive lookup for existing users
+        user = User.query.filter(func.lower(User.email_address) == email_norm).first()
         if not user:
             try:
                 db.session.add(PasswordResetRequestLog(email=email_norm, ip=ip))
@@ -167,4 +173,3 @@ def reset_password():
     except Exception:
         db.session.rollback()
         return jsonify({'success': False, 'message': 'Password reset failed'}), 500
-

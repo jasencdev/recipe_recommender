@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.engine.url import make_url
+from dotenv import load_dotenv
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -16,6 +17,17 @@ def create_app() -> Flask:
     CORS(app, supports_credentials=True)
 
     # Config and env
+    # Load environment variables from the app's .env file (useful for local dev)
+    try:
+        base_dir = os.path.dirname(__file__)
+        env_path = os.path.join(base_dir, '.env')
+        load_dotenv(env_path)
+    except Exception:
+        # Fall back to default lookup if path-based load fails
+        try:
+            load_dotenv()
+        except Exception:
+            pass
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret')
     app.config['ENVIRONMENT'] = os.getenv('ENV', 'development')
     app.config['ADMIN_TOKEN'] = os.getenv('ADMIN_TOKEN')
@@ -24,6 +36,17 @@ def create_app() -> Flask:
     app.config['FRONTEND_BASE_URL'] = os.getenv('FRONTEND_BASE_URL', 'http://localhost:5173')
     app.config['RATE_LIMIT_PER_IP_PER_HOUR'] = int(os.getenv('RATE_LIMIT_PER_IP_PER_HOUR', '5').strip('"'))
     app.config['RATE_LIMIT_PER_EMAIL_PER_HOUR'] = int(os.getenv('RATE_LIMIT_PER_EMAIL_PER_HOUR', '3').strip('"'))
+
+    # Configure Resend availability for email sending
+    try:
+        import resend  # type: ignore
+        api_key = app.config.get('RESEND_API_KEY')
+        if api_key:
+            resend.api_key = api_key
+        app.config['RESEND_AVAILABLE'] = True
+    except Exception:
+        # Either import failed or other issue; disable email sending
+        app.config['RESEND_AVAILABLE'] = False
 
     # Logging
     _log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
@@ -73,10 +96,12 @@ def create_app() -> Flask:
     from .blueprints.auth import auth_bp
     from .blueprints.saved import saved_bp
     from .blueprints.recipes import recipes_bp
+    from .blueprints.admin import admin_bp
     app.register_blueprint(misc_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(saved_bp)
     app.register_blueprint(recipes_bp)
+    app.register_blueprint(admin_bp)
 
     # Idempotent DB init for dev/SQLite
     try:
@@ -114,4 +139,3 @@ def create_app() -> Flask:
         return render_template('index.html')
 
     return app
-
