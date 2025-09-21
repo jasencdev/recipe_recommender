@@ -81,7 +81,7 @@ Jasen Carroll \
 
 - Backend unit tests:
   - Run: `uv run pytest -q -p no:cacheprovider`
-  - With coverage: `uv run pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=term-missing`
+  - With coverage: `uv run pytest -q -p no:cacheprovider --cov=app --cov-report=term-missing`
 
 - Frontend unit tests (Vitest):
   - From `food-recipe-recommender/app/frontend`: `npm run test` (watch) or `npm run test:run` (coverage/CI)
