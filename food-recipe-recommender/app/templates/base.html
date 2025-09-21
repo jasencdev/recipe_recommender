@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Recipe Recommender{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", Roboto, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f7f7f7;
+        color: #222;
+      }
+      header {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      main {
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem 3rem;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 15px 30px rgba(44, 62, 80, 0.1);
+      }
+      h1, h2, h3 {
+        margin-top: 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      input[type="text"], input[type="number"] {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #d5d5d5;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      button {
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 0.75rem;
+        transition: background 0.2s ease-in-out;
+      }
+      button.secondary {
+        background: #2980b9;
+      }
+      button:hover {
+        background: #1e8449;
+      }
+      button.secondary:hover {
+        background: #1f6391;
+      }
+      .recipe-card {
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        background: #fafafa;
+      }
+      .badge {
+        display: inline-block;
+        background: #ecf0f1;
+        border-radius: 999px;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+      }
+      ul.steps {
+        padding-left: 1.2rem;
+      }
+      .flash {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .flash.error {
+        background: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+      }
+      .flash.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      .info {
+        margin-top: 1rem;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Recipe Recommender</h1>
+      <p>Discover recipes tailored to your time, taste, and pantry.</p>
+    </header>
+    <main>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Recipe Recommender{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>Get Personalized Recommendations</h2>
+    <form action="{{ url_for('main.recommend') }}" method="post">
+      <label for="user_name">Your name</label>
+      <input type="text" id="user_name" name="user_name" value="{{ user_name }}" placeholder="e.g. Alex" required>
+
+      <label for="cook_time">Desired cook time (minutes)</label>
+      <input type="number" id="cook_time" name="cook_time" min="0" max="300" value="{{ cook_time or 30 }}" required>
+
+      <label for="complexity">Desired complexity score</label>
+      <input type="number" id="complexity" name="complexity" min="0" max="100" value="{{ complexity or 40 }}" required>
+
+      <button type="submit">Recommend Recipes</button>
+    </form>
+    {% if model_loaded %}
+      <p class="info">The recommendation model is loaded and ready.</p>
+    {% else %}
+      <p class="info">Model failed to load. Check logs for details.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Search Recipes</h2>
+    <form action="{{ url_for('main.search') }}" method="post">
+      <label for="search_query">Recipe name or ingredient</label>
+      <input type="text" id="search_query" name="search_query" value="{{ search_query }}" placeholder="e.g. pasta, chicken">
+      <button type="submit" class="secondary">Search</button>
+    </form>
+  </section>
+
+  {% if user_name and recommendations %}
+    <section class="card">
+      <h2>{{ user_name|e }}'s Recommended Recipes</h2>
+      {% for recipe in recommendations %}
+        <article class="recipe-card">
+          <h3>{{ recipe.name|title }}</h3>
+          <div>
+            <span class="badge">⏱ {{ recipe.minutes }} minutes</span>
+            <span class="badge">⚙️ Complexity {{ recipe.complexity }}</span>
+          </div>
+          {% if recipe.ingredients %}
+            <h4>Ingredients</h4>
+            <p>{{ recipe.ingredients|map('title')|join(', ') }}</p>
+          {% endif %}
+          {% if recipe.steps %}
+            <h4>Steps</h4>
+            <ul class="steps">
+              {% for step in recipe.steps %}
+                <li>{{ step|capitalize }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </section>
+  {% elif user_name %}
+    <section class="card">
+      <h2>{{ user_name|e }}'s Recommended Recipes</h2>
+      <p>No recommendations available for the selected preferences.</p>
+    </section>
+  {% endif %}
+
+  {% if search_query %}
+    <section class="card">
+      <h2>Search Results for “{{ search_query|e }}”</h2>
+      {% if search_results %}
+        {% for recipe in search_results %}
+          <article class="recipe-card">
+            <h3>{{ recipe.name|title }}</h3>
+            <div>
+              <span class="badge">⏱ {{ recipe.minutes }} minutes</span>
+              <span class="badge">⚙️ Complexity {{ recipe.complexity }}</span>
+            </div>
+            {% if recipe.ingredients %}
+              <h4>Ingredients</h4>
+              <p>{{ recipe.ingredients|map('title')|join(', ') }}</p>
+            {% endif %}
+            {% if recipe.steps %}
+              <h4>Steps</h4>
+              <ul class="steps">
+                {% for step in recipe.steps %}
+                  <li>{{ step|capitalize }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </article>
+        {% endfor %}
+      {% else %}
+        <p>No recipes found. Try different keywords.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}
