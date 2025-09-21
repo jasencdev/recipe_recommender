@@ -52,6 +52,7 @@ def create_app() -> Flask:
     # Logging
     _log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
     logging.basicConfig(level=getattr(logging, _log_level, logging.INFO), format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    app_logger = logging.getLogger("app")
 
     # Database URL with fallback
     _db_url_env = (os.getenv('DATABASE_URL') or '').strip()
@@ -77,6 +78,15 @@ def create_app() -> Flask:
     # Load recommender model (supports override via MODEL_PATH)
     try:
         base_dir = os.path.dirname(__file__)
+        # Ensure pickled module imports (e.g., "modules.*") resolve by adding data-pipeline to sys.path
+        try:
+            import sys as _sys
+            data_pipeline_dir = os.path.abspath(os.path.join(base_dir, '..', 'data-pipeline'))
+            if data_pipeline_dir not in _sys.path:
+                _sys.path.append(data_pipeline_dir)
+                app_logger.info("[startup] sys.path += %s", data_pipeline_dir)
+        except Exception:
+            pass
         model_path = os.getenv('MODEL_PATH') or os.path.abspath(os.path.join(base_dir, '..', 'models', 'recipe_recommender_model.joblib'))
         app_logger.info("[startup] loading recommender | path=%s", model_path)
         app.config['RECOMMENDER'] = joblib.load(model_path)
