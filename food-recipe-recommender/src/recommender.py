@@ -1,6 +1,7 @@
 """Module Imports"""
 
 import joblib
+import pickle
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -9,12 +10,13 @@ from src.validation_checks import (
     validate_input_data,
     validate_numeric_range,
     validate_clustering_inputs,
-    validate_recipe_df_schema
+    validate_recipe_df_schema,
 )
 
 
 class RecipeRecommender:
-    """ K-Nearest Neighbors based recipe recommender system. """
+    """K-Nearest Neighbors based recipe recommender system."""
+
     def __init__(self, recipes_df, n_clusters=6):
         """
         Initialize the KNN-based recipe recommendation system.
@@ -27,11 +29,10 @@ class RecipeRecommender:
         validate_input_data(recipes_df)
         validate_clustering_inputs(n_clusters, len(recipes_df))
 
-
         self.data = recipes_df.copy()  # Store dataset
         self.scaler = StandardScaler()
         self.kmeans = None  # KNN model will be trained later
-        self.feature_names = ['minutes', 'complexity_score']
+        self.feature_names = ["minutes", "complexity_score"]
         self.n_clusters = n_clusters
 
         # Ensure required columns exist
@@ -49,7 +50,7 @@ class RecipeRecommender:
         # Normalize features
         self.features_scaled = pd.DataFrame(
             self.scaler.fit_transform(self.features),
-            columns=self.feature_names  # Explicitly set feature names
+            columns=self.feature_names,  # Explicitly set feature names
         )
 
         self._train_kmeans()
@@ -63,16 +64,12 @@ class RecipeRecommender:
         self.kmeans.fit(self.features_scaled)
 
         # Add cluster assignments to data
-        self.data['cluster'] = self.kmeans.labels_
+        self.data["cluster"] = self.kmeans.labels_
 
         # Save the trained model safely
         try:
-            joblib.dump(
-                self, "/models/recipe_recommender_model.joblib"
-            )
-            joblib.dump(
-                self.scaler, "/models/scaler.joblib"
-            )  # Save scaler too
+            joblib.dump(self, "/models/recipe_recommender_model.joblib")
+            joblib.dump(self.scaler, "/models/scaler.joblib")  # Save scaler too
             print("Model and scaler saved successfully")
         except FileNotFoundError as e:
             print(f"Error saving model: {e}")
@@ -88,10 +85,13 @@ class RecipeRecommender:
         Returns:
             DataFrame: Top K nearest recipes.
         """
-                # Validate inputs
-        desired_time = validate_numeric_range(desired_time, 0, 300, 'desired cooking time')
+        # Validate inputs
+        desired_time = validate_numeric_range(
+            desired_time, 0, 300, "desired cooking time"
+        )
         desired_complexity = validate_numeric_range(
-            desired_complexity, 0, 100, 'desired complexity')
+            desired_complexity, 0, 100, "desired complexity"
+        )
 
         if not isinstance(n_recommendations, int) or n_recommendations < 1:
             raise ValueError("Number of recommendations must be a positive integer")
@@ -105,73 +105,94 @@ class RecipeRecommender:
         except FileNotFoundError as e:
             print(f"Error loading scaler: {e}")
             return None
+        except (
+            IsADirectoryError,
+            EOFError,
+            pickle.PickleError,
+            ModuleNotFoundError,
+            IndexError,
+        ) as e:
+            print(f"Scaler file appears to be corrupted: {e}")
+            return None
+        except (
+            joblib.externals.loky.process_executor.TerminatedWorkerError,
+            IOError,
+            OSError,
+        ) as e:
+            print(f"Error loading scaler: {e}")
+            return None
 
         # Create DataFrame with feature names before scaling
         user_input = pd.DataFrame(
             [[desired_time, desired_complexity]],
-            columns=self.feature_names  # Use same feature names as training
+            columns=self.feature_names,  # Use same feature names as training
         )
 
         # Scale user input
         user_input_scaled = pd.DataFrame(
             self.scaler.transform(user_input),
-            columns=self.feature_names  # Maintain feature names after scaling
+            columns=self.feature_names,  # Maintain feature names after scaling
         )
-
 
         # Find nearest cluster
         cluster = self.kmeans.predict(user_input_scaled)[0]
 
         # Get recipes from cluster and sort by similarity to preferences
-        cluster_recipes = self.data[self.data['cluster'] == cluster].copy()
+        cluster_recipes = self.data[self.data["cluster"] == cluster].copy()
 
         # Calculate distance to user preferences for sorting
-        cluster_recipes['similarity_distance'] = cluster_recipes.apply(
-            lambda x: np.sqrt((x['minutes'] - desired_time)**2 +
-                            (x['complexity_score'] - desired_complexity)**2),
-            axis=1
+        cluster_recipes["similarity_distance"] = cluster_recipes.apply(
+            lambda x: np.sqrt(
+                (x["minutes"] - desired_time) ** 2
+                + (x["complexity_score"] - desired_complexity) ** 2
+            ),
+            axis=1,
         )
 
         # Sort by similarity and return top n
-        recommendations = cluster_recipes.nsmallest(n_recommendations, 'similarity_distance')
+        recommendations = cluster_recipes.nsmallest(
+            n_recommendations, "similarity_distance"
+        )
         return recommendations
 
     def search_recipes(self, search_query, n_results=10):
         """
         Search recipes by name or ingredients.
-        
+
         Args:
             search_query (str): Query string to search for in recipe names and ingredients.
             n_results (int): Maximum number of results to return.
-            
+
         Returns:
             DataFrame: Matching recipes sorted by relevance.
         """
         if not isinstance(search_query, str) or not search_query.strip():
             raise ValueError("Search query must be a non-empty string")
-            
+
         if not isinstance(n_results, int) or n_results < 1:
             raise ValueError("Number of results must be a positive integer")
-            
+
         search_query = search_query.lower().strip()
-        
+
         # Search in recipe names and ingredients
         matches = self.data[
-            self.data['name'].str.lower().str.contains(search_query, na=False) |
-            self.data['ingredients'].str.lower().str.contains(search_query, na=False)
+            self.data["name"].str.lower().str.contains(search_query, na=False)
+            | self.data["ingredients"].str.lower().str.contains(search_query, na=False)
         ].copy()
-        
+
         if matches.empty:
             return matches
-            
+
         # Score matches by relevance (name matches get higher score)
-        matches['relevance_score'] = 0
-        name_matches = matches['name'].str.lower().str.contains(search_query, na=False)
-        matches.loc[name_matches, 'relevance_score'] += 2
-        
-        ingredient_matches = matches['ingredients'].str.lower().str.contains(search_query, na=False)
-        matches.loc[ingredient_matches, 'relevance_score'] += 1
-        
+        matches["relevance_score"] = 0
+        name_matches = matches["name"].str.lower().str.contains(search_query, na=False)
+        matches.loc[name_matches, "relevance_score"] += 2
+
+        ingredient_matches = (
+            matches["ingredients"].str.lower().str.contains(search_query, na=False)
+        )
+        matches.loc[ingredient_matches, "relevance_score"] += 1
+
         # Sort by relevance score and return top n
-        search_results = matches.nlargest(n_results, 'relevance_score')
+        search_results = matches.nlargest(n_results, "relevance_score")
         return search_results

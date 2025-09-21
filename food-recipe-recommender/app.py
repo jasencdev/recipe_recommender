@@ -1,6 +1,7 @@
 """Module Imports"""
 
 import ast
+import pickle
 from pathlib import Path
 import streamlit as st
 import joblib
@@ -27,7 +28,30 @@ def load_model():
         )
         return None
 
-    except (joblib.externals.loky.process_executor.TerminatedWorkerError, IOError) as e:
+    except IsADirectoryError:
+        st.error(
+            f"Path points to a directory, not a file: {model_path}. Please check the file path."
+        )
+        return None
+
+    except (
+        EOFError,
+        pickle.PickleError,
+        ModuleNotFoundError,
+        IndexError,
+        KeyError,
+        AttributeError,
+    ):
+        st.error(
+            f"Model file appears to be corrupted or invalid: {model_path}. Please retrain the model."
+        )
+        return None
+
+    except (
+        joblib.externals.loky.process_executor.TerminatedWorkerError,
+        IOError,
+        OSError,
+    ) as e:
         st.error(f"An error occurred while loading the model: {e}")
         return None
 
@@ -43,19 +67,21 @@ def main():
     with st.sidebar:
         # Search functionality - moved to top
         st.write("**Search Recipes:**")
-        search_query = st.text_input("Search by recipe name or ingredient:", key="search_input")
-        
+        search_query = st.text_input(
+            "Search by recipe name or ingredient:", key="search_input"
+        )
+
         if loaded_model is not None and search_query.strip():
             # Get search results
             search_results = loaded_model.search_recipes(search_query)
-            
+
             # Store search results in session state
             st.session_state["search_results"] = search_results
             st.session_state["recommendations"] = None
             st.session_state["selected_recipe"] = None
 
         st.write("---")
-        
+
         # Creating an input field for the user to enter their name
         user_name = st.text_input("Enter your name:")
 
@@ -126,7 +152,10 @@ def main():
             st.write("**Ingredients:**")
             st.write(
                 ", ".join(
-                    [ingredient.title() for ingredient in ast.literal_eval(row["ingredients"])]
+                    [
+                        ingredient.title()
+                        for ingredient in ast.literal_eval(row["ingredients"])
+                    ]
                 )
             )
             st.write("**Steps:**")
@@ -153,7 +182,10 @@ def main():
                 st.write("**Ingredients:**")
                 st.write(
                     ", ".join(
-                        [ingredient.title() for ingredient in ast.literal_eval(row["ingredients"])]
+                        [
+                            ingredient.title()
+                            for ingredient in ast.literal_eval(row["ingredients"])
+                        ]
                     )
                 )
                 st.write("**Steps:**")
