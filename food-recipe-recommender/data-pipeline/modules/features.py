@@ -15,9 +15,7 @@ def select_features(recipes, interactions):
     #################################
 
     # Compute average rating per recipe
-    avg_rating_per_recipe = (
-        interactions.groupby("recipe_id")["rating"].mean().rename("avg_rating")
-    )
+    avg_rating_per_recipe = interactions.groupby("recipe_id")["rating"].mean().rename("avg_rating")
 
     # Compute number of interactions per recipe (popularity proxy)
     num_interactions_per_recipe = (
@@ -25,16 +23,12 @@ def select_features(recipes, interactions):
     )
 
     # Merge the computed features back into the recipes dataset
-    recipes = recipes.merge(
-        avg_rating_per_recipe, left_on="id", right_index=True, how="left"
-    )
-    recipes = recipes.merge(
-        num_interactions_per_recipe, left_on="id", right_index=True, how="left"
-    )
+    recipes = recipes.merge(avg_rating_per_recipe, left_on="id", right_index=True, how="left")
+    recipes = recipes.merge(num_interactions_per_recipe, left_on="id", right_index=True, how="left")
 
     # Fill missing values (some recipes may not have interactions)
-    recipes["avg_rating"].fillna(0)
-    recipes["num_interactions"].fillna(0)
+    recipes["avg_rating"] = recipes["avg_rating"].fillna(0)
+    recipes["num_interactions"] = recipes["num_interactions"].fillna(0)
 
     # Define a complexity score (example: combination of steps and ingredients)
     recipes["complexity_score"] = recipes["n_steps"] * recipes["n_ingredients"]

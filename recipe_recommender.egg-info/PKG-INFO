@@ -1,0 +1,474 @@
+Metadata-Version: 2.4
+Name: recipe-recommender
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aiohttp>=3.12.15
+Requires-Dist: beautifulsoup4>=4.13.5
+Requires-Dist: flask>=3.1.2
+Requires-Dist: flask-cors>=6.0.1
+Requires-Dist: flask-login>=0.6.3
+Requires-Dist: flask-sqlalchemy>=3.1.1
+Requires-Dist: flask-wtf>=1.2.2
+Requires-Dist: gunicorn>=23.0.0
+Requires-Dist: joblib>=1.5.2
+Requires-Dist: matplotlib>=3.10.6
+Requires-Dist: pandas>=2.3.2
+Requires-Dist: psycopg2-binary>=2.9.10
+Requires-Dist: pytest>=8.4.2
+Requires-Dist: pytest-cov>=5.0.0
+Requires-Dist: pytest-flask>=1.3.0
+Requires-Dist: python-dotenv>=1.1.1
+Requires-Dist: requests>=2.32.5
+Requires-Dist: resend>=2.14.0
+Requires-Dist: scikit-learn>=1.7.2
+Requires-Dist: seaborn>=0.13.2
+Requires-Dist: waitress>=3.0.2
+Requires-Dist: werkzeug>=3.1.3
+Requires-Dist: wordcloud>=1.9.4
+Requires-Dist: wtforms>=3.2.1
+Dynamic: license-file
+
+# Recipe Recommender
+
+A machine learning-powered recipe recommendation system built with Flask and React. The application helps users discover recipes based on their preferences and provides personalized recommendations using collaborative filtering and content-based filtering techniques.
+
+## 🚀 Features
+
+- **Smart Recipe Recommendations**: ML-powered recommendations based on user preferences and behavior
+- **Recipe Search**: Advanced search functionality with filtering options
+- **User Accounts**: Registration, authentication, and profile management
+- **Saved Recipes**: Personal recipe collections with notes
+- **Responsive Design**: Modern React frontend with Tailwind CSS
+- **Admin Dashboard**: Administrative tools for system management
+- **Email Integration**: Password reset functionality via Resend API
+- **Rate Limiting**: Built-in protection against abuse
+
+## 📋 Table of Contents
+
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [API Documentation](#api-documentation)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- uv (Python package manager)
+- Docker (optional)
+
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd recipe_recommender
+   ```
+
+2. **Install Python dependencies**
+   ```bash
+   uv sync
+   ```
+
+3. **Install frontend dependencies**
+   ```bash
+   cd food-recipe-recommender/app/frontend
+   npm install
+   cd ../../..
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp food-recipe-recommender/app/.env.example food-recipe-recommender/app/.env
+   # Edit .env with your configuration
+   ```
+
+5. **Start the development servers**
+
+   Backend (from project root):
+   ```bash
+   cd food-recipe-recommender/app
+   uv run flask --app app:create_app run --port 8080
+   ```
+
+   Frontend (in another terminal):
+   ```bash
+   cd food-recipe-recommender/app/frontend
+   npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8080/api
+
+### Docker Deployment
+
+```bash
+# Build the image
+make docker-build
+
+# Run the container
+make docker-run
+```
+
+## 🏗 Architecture
+
+### Technology Stack
+
+**Backend:**
+- **Flask**: Web framework with blueprint-based architecture
+- **SQLAlchemy**: ORM with support for SQLite and PostgreSQL
+- **Flask-Login**: User session management
+- **Scikit-learn**: Machine learning models
+- **Resend**: Email service integration
+
+**Frontend:**
+- **React 19**: Modern UI library with hooks
+- **TypeScript**: Type-safe JavaScript
+- **Tailwind CSS**: Utility-first CSS framework
+- **Headless UI**: Accessible UI components
+- **Vite**: Fast build tool and dev server
+- **React Router**: Client-side routing
+
+**Testing:**
+- **Pytest**: Backend testing framework
+- **Vitest**: Frontend testing framework
+- **React Testing Library**: Component testing
+- **Coverage reporting**: Codecov integration
+
+### Project Structure
+
+```
+recipe_recommender/
+├── food-recipe-recommender/           # Main application directory
+│   ├── app/                          # Flask application
+│   │   ├── __init__.py               # App factory
+│   │   ├── models.py                 # SQLAlchemy models
+│   │   ├── utils.py                  # Utility functions
+│   │   ├── blueprints/               # API route blueprints
+│   │   │   ├── auth.py               # Authentication endpoints
+│   │   │   ├── recipes.py            # Recipe endpoints
+│   │   │   ├── saved.py              # Saved recipes
+│   │   │   ├── admin.py              # Admin endpoints
+│   │   │   └── misc.py               # Miscellaneous endpoints
+│   │   ├── frontend/                 # React application
+│   │   │   ├── src/                  # Source code
+│   │   │   │   ├── js/              # TypeScript/React files
+│   │   │   │   │   ├── components/   # Reusable components
+│   │   │   │   │   ├── pages/        # Page components
+│   │   │   │   │   ├── services/     # API services
+│   │   │   │   │   └── utils/        # Utility functions
+│   │   │   └── public/               # Static assets
+│   │   ├── templates/                # Flask templates
+│   │   └── static/                   # Static files
+│   ├── data/                         # Dataset files (not in Git)
+│   ├── data-pipeline/                # Data processing scripts
+│   └── models/                       # ML model artifacts
+├── tests/                            # Backend tests
+├── docs/                             # Documentation
+├── Dockerfile                        # Container configuration
+├── Makefile                          # Development commands
+└── pyproject.toml                    # Python dependencies
+```
+
+### Database Models
+
+- **User**: User accounts with authentication
+- **SavedRecipe**: User's saved recipes with metadata
+- **PasswordResetToken**: Secure password reset tokens
+- **PasswordResetRequestLog**: Rate limiting for password resets
+
+### API Architecture
+
+The API follows RESTful principles with blueprint-based organization:
+
+- `/api/auth/*` - Authentication and user management
+- `/api/recipes/*` - Recipe search and recommendations
+- `/api/saved/*` - Saved recipe management
+- `/api/admin/*` - Administrative functions
+
+## 🛠 Development
+
+### Backend Development
+
+```bash
+# Run with auto-reload
+cd food-recipe-recommender/app
+uv run flask --app app:create_app run --debug --port 8080
+
+# Run tests
+uv run pytest -q -p no:cacheprovider
+
+# Run tests with coverage
+uv run pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=term-missing
+```
+
+### Frontend Development
+
+```bash
+cd food-recipe-recommender/app/frontend
+
+# Start dev server with hot reload
+npm run dev
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:run
+
+# Build for production
+npm run build
+```
+
+### Code Quality
+
+```bash
+# Backend linting (if configured)
+uv run ruff check food-recipe-recommender/
+
+# Frontend linting
+cd food-recipe-recommender/app/frontend
+npm run lint
+```
+
+## 🧪 Testing
+
+### Test Suites
+
+1. **Backend Unit Tests**: Comprehensive test coverage for API endpoints, models, and utilities
+2. **Frontend Unit Tests**: Component testing with React Testing Library
+3. **Integration Tests**: End-to-end API testing against running backend
+4. **Coverage Reporting**: Automated coverage tracking with Codecov
+
+### Running Tests
+
+```bash
+# All backend tests
+make test
+
+# Backend tests with coverage
+make test-cov
+
+# Frontend tests (watch mode)
+make test-frontend
+
+# Frontend tests with coverage
+make test-frontend-cov
+
+# Live integration tests (requires running backend)
+make test-live
+
+# Custom API endpoint for integration tests
+make test-live API=http://localhost:8080/api
+```
+
+### Test Configuration
+
+- Backend: `pytest.ini` and `.coveragerc`
+- Frontend: `vitest.config.ts` and `setupTests.ts`
+- Coverage thresholds: `codecov.yml`
+
+## 🚀 Deployment
+
+### Environment Variables
+
+Create a `.env` file in `food-recipe-recommender/app/`:
+
+```env
+# Core Configuration
+SECRET_KEY=your-secret-key-here
+DATABASE_URL=postgresql://user:pass@host:port/dbname  # or leave empty for SQLite
+
+# Email Configuration (via Resend)
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM=noreply@yourdomain.com
+FRONTEND_BASE_URL=https://yourdomain.com
+
+# Admin Access
+ADMIN_TOKEN=your-admin-token
+
+# Rate Limiting
+RATE_LIMIT_PER_IP_PER_HOUR=5
+RATE_LIMIT_PER_EMAIL_PER_HOUR=3
+
+# Production Settings
+ENV=production  # Enables production mode
+```
+
+### Docker Deployment
+
+```bash
+# Build production image
+docker build -t recipe-recommender .
+
+# Run with environment file
+docker run -p 8080:8080 --env-file .env recipe-recommender
+
+# Or with individual environment variables
+docker run -p 8080:8080 \
+  -e SECRET_KEY=your-secret \
+  -e DATABASE_URL=your-db-url \
+  recipe-recommender
+```
+
+### Railway Deployment
+
+1. **Database**: Add a PostgreSQL service and set `DATABASE_URL`
+2. **Persistent Storage**: Mount volume at `/data` and set `SQLITE_DIR=/data` (SQLite alternative)
+3. **Environment**: Configure all required environment variables
+4. **Build**: Railway will automatically detect and build the Dockerfile
+
+### Model Artifacts
+
+Ensure the ML model file exists at `food-recipe-recommender/models/recipe_recommender_model.joblib` before building the Docker image. Alternatively, mount the model at runtime:
+
+```bash
+docker run -p 8080:8080 \
+  -e MODEL_PATH=/models/model.joblib \
+  -v /path/to/your/model.joblib:/models/model.joblib:ro \
+  recipe-recommender
+```
+
+## 📖 API Documentation
+
+### Authentication Endpoints
+
+```
+POST /api/auth/register     - User registration
+POST /api/auth/login        - User login
+POST /api/auth/logout       - User logout
+POST /api/auth/forgot       - Request password reset
+POST /api/auth/reset        - Reset password with token
+GET  /api/auth/user         - Get current user info
+```
+
+### Recipe Endpoints
+
+```
+GET  /api/recipes/search    - Search recipes with filters
+GET  /api/recipes/recommend - Get personalized recommendations
+GET  /api/recipes/{id}      - Get recipe details
+```
+
+### Saved Recipes
+
+```
+GET    /api/saved           - Get user's saved recipes
+POST   /api/saved           - Save a recipe
+DELETE /api/saved/{id}      - Remove saved recipe
+```
+
+### Admin Endpoints
+
+All admin endpoints require `X-Admin-Token` header.
+
+```
+GET  /api/admin/status/email            - Check email configuration
+POST /api/admin/test-email              - Send test email
+GET  /api/admin/rate-limit              - Check rate limit status
+POST /api/admin/maintenance/clear-reset-data - Cleanup old tokens
+```
+
+For detailed API specifications, see [docs/API.md](docs/API.md).
+
+## ⚙️ Configuration
+
+### Database Configuration
+
+**SQLite (Development)**
+```env
+# Uses instance/database.db (auto-created)
+# No DATABASE_URL needed
+```
+
+**PostgreSQL (Production)**
+```env
+DATABASE_URL=postgresql://user:password@host:port/database
+```
+
+**Railway with Persistent SQLite**
+```env
+SQLITE_DIR=/data  # Requires mounted volume
+```
+
+### Email Configuration
+
+The app uses [Resend](https://resend.com) for email delivery:
+
+1. Sign up for Resend and get an API key
+2. Verify your sending domain/email
+3. Configure environment variables:
+   ```env
+   RESEND_API_KEY=re_your_api_key
+   EMAIL_FROM=noreply@yourdomain.com
+   FRONTEND_BASE_URL=https://yourdomain.com
+   ```
+
+### Rate Limiting
+
+Protect against abuse with configurable rate limits:
+
+```env
+RATE_LIMIT_PER_IP_PER_HOUR=5      # Per IP address
+RATE_LIMIT_PER_EMAIL_PER_HOUR=3   # Per email address
+```
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. **Fork and clone** the repository
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Install dependencies**: `uv sync && cd food-recipe-recommender/app/frontend && npm install`
+4. **Make your changes** following the coding standards
+5. **Add tests** for new functionality
+6. **Run the test suite**: `make test && make test-frontend`
+7. **Commit your changes**: `git commit -m 'Add amazing feature'`
+8. **Push to your fork**: `git push origin feature/amazing-feature`
+9. **Open a Pull Request**
+
+### Coding Standards
+
+- **Python**: Follow PEP 8, use type hints where appropriate
+- **TypeScript**: Use strict mode, prefer functional components with hooks
+- **Testing**: Maintain high test coverage (>90%)
+- **Documentation**: Update documentation for API changes
+- **Commits**: Use conventional commit messages
+
+### Code Review Process
+
+- All changes require a pull request
+- Automated tests must pass
+- Code coverage must not decrease
+- At least one reviewer approval required
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with Flask and React
+- ML powered by scikit-learn
+- UI components from Headless UI
+- Email service by Resend
+- Deployment on Railway
+
+---
+
+For detailed operational procedures, see [docs/OPERATIONS.md](docs/OPERATIONS.md).
+
+For API specifications, see [docs/API.md](docs/API.md).
+
+For frontend component documentation, see [docs/FRONTEND.md](docs/FRONTEND.md).

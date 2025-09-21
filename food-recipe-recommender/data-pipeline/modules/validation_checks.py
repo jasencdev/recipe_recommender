@@ -5,6 +5,7 @@ Module for input validation and data quality checks in the Recipe Recommender Sy
 
 import ast
 from pathlib import Path
+
 import numpy as np
 from sklearn.model_selection import cross_val_score
 
@@ -38,9 +39,7 @@ def validate_input_data(recipes_df, required_columns=None):
     # Check for null values in required columns
     null_counts = recipes_df[required_columns].isnull().sum()
     if null_counts.any():
-        raise ValueError(
-            f"Null values found in columns: {null_counts[null_counts > 0]}"
-        )
+        raise ValueError(f"Null values found in columns: {null_counts[null_counts > 0]}")
 
     return True
 
@@ -65,9 +64,7 @@ def validate_numeric_range(value, min_val, max_val, param_name):
         raise ValueError(f"{param_name} must be a number")
 
     if value < min_val or value > max_val:
-        raise ValueError(
-            f"{param_name} must be between {min_val} and {max_val}, got {value}"
-        )
+        raise ValueError(f"{param_name} must be between {min_val} and {max_val}, got {value}")
 
     return value
 

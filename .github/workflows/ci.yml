@@ -29,6 +29,7 @@ jobs:
           LOG_LEVEL: INFO
           ENV: test
           SECRET_KEY: test-ci
+          ENABLE_CSRF: "false"
         run: |
           uv run pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
 

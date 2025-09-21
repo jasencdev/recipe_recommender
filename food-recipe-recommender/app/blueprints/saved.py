@@ -1,100 +1,74 @@
-from typing import Tuple, Dict, Any
-from flask import Blueprint, jsonify, request, Response, current_app
-from flask_login import login_required, current_user
+import logging
+from typing import Any, Dict, Tuple
+
+from flask import Blueprint, Response, jsonify, request
+from flask_login import current_user, login_required
+
 from .. import db
 from ..models import SavedRecipe
-import logging
+from ..services.recipes_utils import find_row_by_id, resolve_recommender
 
-
-saved_bp = Blueprint('saved', __name__)
+saved_bp = Blueprint("saved", __name__)
 logger = logging.getLogger(__name__)
 
 
-@saved_bp.get('/api/saved-recipes')
+@saved_bp.get("/api/saved-recipes")
 @login_required
 def get_saved_recipes() -> Tuple[Response, int]:
     try:
         entries = SavedRecipe.query.filter_by(user_id=current_user.user_id).all()
         ids = [e.recipe_id for e in entries]
         logger.debug("[saved] user=%s count=%s", current_user.user_id, len(ids))
-        return jsonify({'recipes': [{'id': rid} for rid in ids]})
+        return jsonify({"recipes": [{"id": rid} for rid in ids]})
     except Exception as e:
-        return jsonify({'error': f'Failed to get saved recipes: {e}'}), 500
+        return jsonify({"error": f"Failed to get saved recipes: {e}"}), 500
 
 
-@saved_bp.post('/api/saved-recipes')
+@saved_bp.post("/api/saved-recipes")
 @login_required
 def save_recipe() -> Tuple[Response, int]:
     data: Dict[str, Any] = request.get_json()
-    if not data or 'recipe_id' not in data:
-        return jsonify({'error': 'recipe_id is required'}), 400
+    if not data or "recipe_id" not in data:
+        return jsonify({"error": "recipe_id is required"}), 400
 
-    recipe_id = str(data['recipe_id']).strip()
+    recipe_id = str(data["recipe_id"]).strip()
     if not recipe_id:
-        return jsonify({'error': 'recipe_id cannot be empty'}), 400
+        return jsonify({"error": "recipe_id cannot be empty"}), 400
     try:
         # Validate recipe exists in model data (match monolithic behavior)
-        try:
-            import app as app_module  # type: ignore
-            if hasattr(app_module, 'recipe_recommender'):
-                recommender = getattr(app_module, 'recipe_recommender', None)
-            else:
-                recommender = current_app.config.get('RECOMMENDER')
-        except Exception:
-            recommender = current_app.config.get('RECOMMENDER')
-        if recommender and getattr(recommender, 'data', None) is not None:
-            import pandas as _pd  # type: ignore
+        recommender = resolve_recommender()
+        if recommender and getattr(recommender, "data", None) is not None:
             data = recommender.data
-            found = False
-            try:
-                # numeric id columns
-                rid_int = int(recipe_id)
-                if 'food_recipe_id' in data.columns and not data[data['food_recipe_id'] == rid_int].empty:
-                    found = True
-                if not found and 'id' in data.columns and not data[data['id'] == rid_int].empty:
-                    found = True
-                if not found:
-                    try:
-                        found = not data.loc[[rid_int]].empty
-                    except Exception:
-                        pass
-            except Exception:
-                # string id columns
-                if 'recipe_id' in data.columns and not data[data['recipe_id'] == recipe_id].empty:
-                    found = True
-                if not found:
-                    try:
-                        if recipe_id in getattr(data, 'index', []):
-                            found = True
-                        else:
-                            found = not data.loc[[recipe_id]].empty  # type: ignore[index]
-                    except Exception:
-                        pass
-            if not found:
-                return jsonify({'error': 'Recipe not found'}), 400
+            row = find_row_by_id(data, recipe_id)
+            if row is None or row.empty:
+                return jsonify({"error": "Recipe not found"}), 400
 
-        existing = SavedRecipe.query.filter_by(user_id=current_user.user_id, recipe_id=recipe_id).first()
+        existing = SavedRecipe.query.filter_by(
+            user_id=current_user.user_id, recipe_id=recipe_id
+        ).first()
         if existing:
-            return jsonify({'error': 'Recipe already saved'}), 400
+            return jsonify({"error": "Recipe already saved"}), 400
         saved = SavedRecipe(user_id=current_user.user_id, recipe_id=recipe_id)
         db.session.add(saved)
         db.session.commit()
-        return jsonify({'message': 'Recipe saved successfully'})
+        return jsonify({"message": "Recipe saved successfully"})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': f'Failed to save recipe: {e}'}), 500
+        return jsonify({"error": f"Failed to save recipe: {e}"}), 500
 
 
-@saved_bp.delete('/api/saved-recipes/<recipe_id>')
+@saved_bp.delete("/api/saved-recipes/<recipe_id>")
 @login_required
 def remove_saved(recipe_id: str) -> Tuple[Response, int]:
     try:
-        saved = SavedRecipe.query.filter_by(user_id=current_user.user_id, recipe_id=str(recipe_id)).first()
+        saved = SavedRecipe.query.filter_by(
+            user_id=current_user.user_id, recipe_id=str(recipe_id)
+        ).first()
         if not saved:
-            return jsonify({'error': 'Recipe not found in saved recipes'}), 404
+            return jsonify({"error": "Recipe not found in saved recipes"}), 404
         db.session.delete(saved)
         db.session.commit()
-        return jsonify({'message': 'Recipe removed from saved recipes'})
+        return jsonify({"message": "Recipe removed from saved recipes"})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': f'Failed to remove saved recipe: {e}'}), 500
+        return jsonify({"error": f"Failed to remove saved recipe: {e}"}), 500

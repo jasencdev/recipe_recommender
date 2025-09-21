@@ -35,6 +35,7 @@ jobs:
           SECRET_KEY: test-ci
           # DATABASE_URL is set by tests/conftest.py if not present; set explicitly for safety
           DATABASE_URL: "sqlite:///:memory:"
+          ENABLE_CSRF: "false"
         run: |
           uv run pytest -q -p no:cacheprovider --cov=food-recipe-recommender/app --cov-report=xml:coverage.xml
 
@@ -97,4 +98,3 @@ jobs:
           tags: recipe-recommender:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-

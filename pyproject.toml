@@ -30,3 +30,51 @@ dependencies = [
     "wordcloud>=1.9.4",
     "wtforms>=3.2.1",
 ]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+exclude = ["food-recipe-recommender/models/", "food-recipe-recommender/app/frontend/"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip = ["food-recipe-recommender/models", "food-recipe-recommender/app/frontend"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = ["food-recipe-recommender/models", "food-recipe-recommender/app/frontend"]
+lint.select = [
+  "E", "F", "W",  # pycodestyle/pyflakes
+  "B",              # bugbear
+  "I",              # isort
+  "S",              # bandit-like security rules (subset)
+]
+lint.ignore = [
+  "E203",  # whitespace before ':' (black compat)
+  "E501",  # allow longer lines where pragmatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",  # allow assert in tests
+  "S105", "S106", "S107",  # hardcoded passwords/tokens in tests
+  "B017",  # broad exception assertions in tests
+  "F841",  # unused variables in tests (fixtures, setup)
+  "E402",  # import positions in tests
+]
+"food-recipe-recommender/app/app.py" = ["S101", "E402"]
+"food-recipe-recommender/app/__init__.py" = ["S110", "E501", "F401"]
+"food-recipe-recommender/data-pipeline/modules/ingredient_enricher.py" = ["S112"]
+"food-recipe-recommender/data-pipeline/modules/async_ingredient_scraper.py" = ["S112"]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["modules"]
+
+[tool.setuptools.package-dir]
+modules = "food-recipe-recommender/data-pipeline/modules"

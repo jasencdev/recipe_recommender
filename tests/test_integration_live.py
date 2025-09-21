@@ -1,11 +1,9 @@
 import os
 import time
 import uuid
-from typing import Optional
 
 import pytest
 import requests
-
 
 API_BASE = os.getenv("API_BASE_URL", "http://127.0.0.1:8080/api")
 LIVE_ENABLED = os.getenv("LIVE_API", "0") not in ("", "0", "false", "False")

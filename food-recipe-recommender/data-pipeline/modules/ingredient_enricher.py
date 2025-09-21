@@ -4,22 +4,25 @@ Fetches full ingredient information (with quantities) from Food.com
 using recipe IDs from the dataset.
 """
 
-import requests
-import time
-import pandas as pd
-from bs4 import BeautifulSoup
-import re
-import json
 import ast
+import json
+import re
+import time
 from pathlib import Path
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 
 class IngredientEnricher:
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+        )
         self.successful_fetches = 0
         self.failed_fetches = 0
         self.cache = {}  # Cache successful requests
@@ -27,11 +30,11 @@ class IngredientEnricher:
     def clean_recipe_name_for_url(self, name):
         """Convert recipe name to URL-friendly format"""
         # Remove special characters and replace spaces with hyphens
-        cleaned = re.sub(r'[^\w\s-]', '', name.lower())
-        cleaned = re.sub(r'\s+', '-', cleaned.strip())
+        cleaned = re.sub(r"[^\w\s-]", "", name.lower())
+        cleaned = re.sub(r"\s+", "-", cleaned.strip())
         # Remove multiple consecutive hyphens
-        cleaned = re.sub(r'-+', '-', cleaned)
-        return cleaned.strip('-')
+        cleaned = re.sub(r"-+", "-", cleaned)
+        return cleaned.strip("-")
 
     def fetch_ingredients_from_food_com(self, recipe_id, recipe_name):
         """
@@ -55,7 +58,7 @@ class IngredientEnricher:
             url_formats = [
                 f"https://www.food.com/recipe/{cleaned_name}-{recipe_id}",
                 f"https://www.food.com/recipe/{recipe_id}",
-                f"https://www.food.com/recipe/{recipe_id}/{cleaned_name}"
+                f"https://www.food.com/recipe/{recipe_id}/{cleaned_name}",
             ]
 
             for url in url_formats:
@@ -83,32 +86,32 @@ class IngredientEnricher:
     def _extract_ingredients_from_html(self, html):
         """Extract ingredients from Food.com HTML"""
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, "html.parser")
 
             # Look for JSON-LD structured data first (most reliable)
-            json_scripts = soup.find_all('script', type='application/ld+json')
+            json_scripts = soup.find_all("script", type="application/ld+json")
             for script in json_scripts:
                 try:
                     data = json.loads(script.string)
                     if isinstance(data, list):
                         data = data[0]
 
-                    if data.get('@type') == 'Recipe' and 'recipeIngredient' in data:
-                        ingredients = data['recipeIngredient']
+                    if data.get("@type") == "Recipe" and "recipeIngredient" in data:
+                        ingredients = data["recipeIngredient"]
                         if ingredients:
                             return ingredients
-                except:
+                except Exception:
                     continue
 
             # Look for common ingredient selectors on Food.com
             ingredient_selectors = [
-                '.recipe-ingredients li',
-                '.ingredients li',
-                '.recipe-ingredient',
+                ".recipe-ingredients li",
+                ".ingredients li",
+                ".recipe-ingredient",
                 '[data-testid="recipe-ingredient"]',
-                '.ingredient-item',
-                '.recipe-summary__item',
-                '.ingredients__section li'
+                ".ingredient-item",
+                ".recipe-summary__item",
+                ".ingredients__section li",
             ]
 
             for selector in ingredient_selectors:
@@ -129,7 +132,9 @@ class IngredientEnricher:
             print(f"    Error parsing HTML: {e}")
             return None
 
-    def enrich_recipe_dataframe(self, df, max_requests=None, delay=2.0, start_from=0, save_progress_every=50):
+    def enrich_recipe_dataframe(
+        self, df, max_requests=None, delay=2.0, start_from=0, save_progress_every=50
+    ):
         """
         Enrich a recipe dataframe with detailed ingredients
 
@@ -146,14 +151,16 @@ class IngredientEnricher:
         df = df.copy()
 
         # Initialize detailed_ingredients column if it doesn't exist
-        if 'detailed_ingredients' not in df.columns:
-            df['detailed_ingredients'] = df['ingredients']  # Default to original
+        if "detailed_ingredients" not in df.columns:
+            df["detailed_ingredients"] = df["ingredients"]  # Default to original
 
         total_recipes = len(df) if max_requests is None else min(max_requests, len(df))
         end_index = start_from + total_recipes if max_requests else len(df)
 
-        print(f"Starting ingredient enrichment...")
-        print(f"Processing recipes {start_from} to {end_index-1} (total: {end_index - start_from})")
+        print("Starting ingredient enrichment...")
+        print(
+            f"Processing recipes {start_from} to {end_index - 1} (total: {end_index - start_from})"
+        )
         print(f"Delay between requests: {delay} seconds")
 
         progress_file = Path("enrichment_progress.csv")
@@ -161,20 +168,26 @@ class IngredientEnricher:
         for idx in range(start_from, end_index):
             row = df.iloc[idx]
             # Use food_recipe_id if available, fallback to id
-            recipe_id = row.get('food_recipe_id', row.get('id', None))
-            recipe_name = row['name']
+            recipe_id = row.get("food_recipe_id", row.get("id", None))
+            recipe_name = row["name"]
 
             print(f"\nProcessing recipe {idx + 1}/{len(df)}: {recipe_name}")
             print(f"  Food.com Recipe ID: {recipe_id}")
 
             # Skip if already enriched (not just original ingredients)
-            current_ingredients = row.get('detailed_ingredients', row['ingredients'])
-            original_ingredients = ast.literal_eval(row['ingredients']) if isinstance(row['ingredients'], str) else row['ingredients']
+            current_ingredients = row.get("detailed_ingredients", row["ingredients"])
+            original_ingredients = (
+                ast.literal_eval(row["ingredients"])
+                if isinstance(row["ingredients"], str)
+                else row["ingredients"]
+            )
 
-            if (isinstance(current_ingredients, list) and
-                current_ingredients != original_ingredients and
-                len(current_ingredients) > 0):
-                print(f"  ↻ Already enriched, skipping")
+            if (
+                isinstance(current_ingredients, list)
+                and current_ingredients != original_ingredients
+                and len(current_ingredients) > 0
+            ):
+                print("  ↻ Already enriched, skipping")
                 self.successful_fetches += 1
                 continue
 
@@ -182,27 +195,31 @@ class IngredientEnricher:
             detailed_ingredients = self.fetch_ingredients_from_food_com(recipe_id, recipe_name)
 
             if detailed_ingredients and len(detailed_ingredients) > 1:
-                df.at[idx, 'detailed_ingredients'] = detailed_ingredients
+                df.at[idx, "detailed_ingredients"] = detailed_ingredients
                 self.successful_fetches += 1
                 print(f"  ✓ Found {len(detailed_ingredients)} detailed ingredients")
                 print(f"    Sample: {detailed_ingredients[0]}")
             else:
                 self.failed_fetches += 1
-                print(f"  ✗ Could not fetch detailed ingredients, keeping original")
+                print("  ✗ Could not fetch detailed ingredients, keeping original")
 
             # Save progress periodically
             if (idx - start_from + 1) % save_progress_every == 0:
-                print(f"\n📊 Saving progress... ({self.successful_fetches} successful, {self.failed_fetches} failed)")
+                print(
+                    f"\n📊 Saving progress... ({self.successful_fetches} successful, {self.failed_fetches} failed)"
+                )
                 df.to_csv(progress_file, index=False)
 
             # Respectful delay
             if idx < end_index - 1:
                 time.sleep(delay)
 
-        print(f"\n🎉 Enrichment complete!")
+        print("\n🎉 Enrichment complete!")
         print(f"Successfully enriched: {self.successful_fetches}")
         print(f"Failed to enrich: {self.failed_fetches}")
-        print(f"Success rate: {self.successful_fetches/(self.successful_fetches + self.failed_fetches)*100:.1f}%")
+        print(
+            f"Success rate: {self.successful_fetches / (self.successful_fetches + self.failed_fetches) * 100:.1f}%"
+        )
 
         # Save final results
         output_file = Path("enriched_recipes.csv")
@@ -221,12 +238,16 @@ class IngredientEnricher:
         print("\n📋 Results Summary:")
         print("-" * 80)
 
-        for idx, row in enriched_df.iterrows():
+        for _idx, row in enriched_df.iterrows():
             print(f"\nRecipe: {row['name']}")
             print(f"ID: {row['id']}")
 
-            original = ast.literal_eval(row['ingredients']) if isinstance(row['ingredients'], str) else row['ingredients']
-            detailed = row['detailed_ingredients']
+            original = (
+                ast.literal_eval(row["ingredients"])
+                if isinstance(row["ingredients"], str)
+                else row["ingredients"]
+            )
+            detailed = row["detailed_ingredients"]
 
             print(f"Original ingredients ({len(original)}): {original[:3]}...")
             if isinstance(detailed, list) and detailed != original:
@@ -243,8 +264,8 @@ def load_processed_dataset():
     print("📚 Loading processed dataset...")
 
     # Import pipeline modules
-    from preprocessing import load_data, preprocess_data
     from features import select_features
+    from preprocessing import load_data, preprocess_data
 
     # Run the data pipeline
     recipes, interactions = load_data()
@@ -258,6 +279,7 @@ def load_processed_dataset():
     print(f"Columns: {list(selected_features.columns)}")
 
     return selected_features
+
 
 def main():
     """Main function to run the enrichment"""
@@ -295,8 +317,10 @@ def main():
     elif choice == "3":
         enricher.enrich_recipe_dataframe(df, max_requests=1000, delay=1.0)
     elif choice == "4":
-        confirm = input("This will process ALL 231k+ recipes and take many hours. Continue? (yes/no): ")
-        if confirm.lower() == 'yes':
+        confirm = input(
+            "This will process ALL 231k+ recipes and take many hours. Continue? (yes/no): "
+        )
+        if confirm.lower() == "yes":
             enricher.enrich_recipe_dataframe(df, delay=0.5)
         else:
             print("Cancelled.")

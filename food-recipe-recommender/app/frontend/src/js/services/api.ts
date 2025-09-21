@@ -8,6 +8,44 @@ const api = axios.create({
 
 export default api;
 
+// CSRF handling: fetch and attach token for unsafe methods
+const getCookie = (name: string): string | null => {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+let csrfReady: Promise<void> | null = null;
+const ensureCsrfToken = async () => {
+  if (csrfReady) return csrfReady;
+  csrfReady = (async () => {
+    try {
+      const cookie = getCookie('csrf_token');
+      if (!cookie) {
+        await api.get('/csrf');
+      }
+      const token = getCookie('csrf_token');
+      if (token) {
+        api.defaults.headers.common['X-CSRFToken'] = token;
+      }
+    } catch (e) {
+      logger.debug('CSRF fetch skipped/failed:', e);
+    }
+  })();
+  return csrfReady;
+};
+
+// Some tests mock axios without interceptors; guard accordingly
+const interceptors = (api as any).interceptors?.request;
+if (interceptors && typeof interceptors.use === 'function') {
+  interceptors.use(async (config: any) => {
+    const method = (config?.method || 'get').toLowerCase();
+    if (['post', 'put', 'patch', 'delete'].includes(method)) {
+      await ensureCsrfToken();
+    }
+    return config;
+  });
+}
+
 // Function to get authentication status
 export const getAuthStatus = async () => {
   try {

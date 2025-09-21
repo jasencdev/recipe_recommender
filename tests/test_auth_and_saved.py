@@ -4,12 +4,14 @@ import json
 def register(client, email="user@example.com", password="password123", full_name="Test User"):
     return client.post(
         "/api/register",
-        data=json.dumps({
-            "email": email,
-            "password": password,
-            "full_name": full_name,
-            "newsletter_signup": False,
-        }),
+        data=json.dumps(
+            {
+                "email": email,
+                "password": password,
+                "full_name": full_name,
+                "newsletter_signup": False,
+            }
+        ),
         content_type="application/json",
     )
 
@@ -30,10 +32,24 @@ def test_register_and_auth_me(client):
 def test_save_list_delete_recipe_flow(client, monkeypatch):
     # Ensure a recipe with id=123 exists in the model
     import pandas as pd
+
     class Rec:
         def __init__(self):
-            self.data = pd.DataFrame([{ 'id': 123, 'name': 'Exists', 'minutes': 1, 'difficulty': 'easy', 'ingredients': '[]', 'steps': '' }])
+            self.data = pd.DataFrame(
+                [
+                    {
+                        "id": 123,
+                        "name": "Exists",
+                        "minutes": 1,
+                        "difficulty": "easy",
+                        "ingredients": "[]",
+                        "steps": "",
+                    }
+                ]
+            )
+
     import app as app_module  # type: ignore
+
     app_module.recipe_recommender = Rec()
     # Must be authenticated
     assert register(client).status_code == 200

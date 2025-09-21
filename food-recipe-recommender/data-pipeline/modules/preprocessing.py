@@ -1,8 +1,9 @@
 """Module Imports"""
 
 import ast
-from pathlib import Path
 from collections import Counter
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -17,12 +18,8 @@ def load_data():
 
     # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
     # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    recipes_data_path = (
-        base_dir / "../" / "data" / "RAW_recipes.csv"
-    ).resolve()
-    interactions_data_path = (
-        base_dir / "../" / "data" / "RAW_interactions.csv"
-    ).resolve()
+    recipes_data_path = (base_dir / "../" / "data" / "RAW_recipes.csv").resolve()
+    interactions_data_path = (base_dir / "../" / "data" / "RAW_interactions.csv").resolve()
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
@@ -112,9 +109,7 @@ def plot_review_sentiment(interactions):
     Creates a word cloud from review text in the interactions dataset.
     """
     review_text = " ".join(interactions["review"].dropna())
-    wordcloud = WordCloud(width=800, height=400, background_color="white").generate(
-        review_text
-    )
+    wordcloud = WordCloud(width=800, height=400, background_color="white").generate(review_text)
 
     plt.figure(figsize=(10, 6))
     plt.imshow(wordcloud, interpolation="bilinear")
@@ -127,9 +122,7 @@ def plot_prep_time_vs_ingredients(recipes):
     """Plot preparation time against number of ingredients"""
 
     # Assuming 'ingredients' column is a list of ingredients
-    recipes["num_ingredients"] = recipes["ingredients"].apply(
-        lambda x: len(ast.literal_eval(x))
-    )
+    recipes["num_ingredients"] = recipes["ingredients"].apply(lambda x: len(ast.literal_eval(x)))
 
     plt.figure(figsize=(10, 6))
     plt.scatter(recipes["minutes"], recipes["num_ingredients"], alpha=0.5)
@@ -144,16 +137,23 @@ def plot_most_used_ingredients(recipes, top_n=10):
     """Plot the most used ingredients"""
 
     # Flatten the list of ingredients and count occurrences
-    all_ingredients = [
-        ingredient
-        for sublist in recipes["ingredients"].apply(eval)
-        for ingredient in sublist
-    ]
+    import ast
+
+    all_ingredients = []
+    for sublist in recipes["ingredients"]:
+        try:
+            parsed = ast.literal_eval(sublist) if isinstance(sublist, str) else sublist
+            if isinstance(parsed, list):
+                all_ingredients.extend(parsed)
+        except Exception as e:
+            # Skip malformed entries; log at debug level in real pipeline
+            _ = e
+            continue
     ingredient_counts = Counter(all_ingredients)
     most_common_ingredients = ingredient_counts.most_common(top_n)
 
     # Unzip the list of tuples
-    ingredients, counts = zip(*most_common_ingredients)
+    ingredients, counts = zip(*most_common_ingredients, strict=False)
 
     plt.figure(figsize=(10, 6))
     plt.barh(ingredients, counts, color="skyblue")

@@ -1,7 +1,7 @@
-from sklearn.cluster import KMeans
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import train_test_split
 
 
 def optimal_number_of_clusters(recipes_df):
@@ -94,9 +94,7 @@ def train_test_split_data(recipes_df):
     recipes_df["cluster"] = kmeans.fit_predict(X)
 
     # Define feature columns (X) and target (y)
-    X = recipes_df[
-        ["minutes", "complexity_score"]
-    ]  # Features: Cooking time and complexity
+    X = recipes_df[["minutes", "complexity_score"]]  # Features: Cooking time and complexity
     y = recipes_df["cluster"]  # Target: Cluster labels
 
     # Split into train and test sets
