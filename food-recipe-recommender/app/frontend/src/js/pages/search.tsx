@@ -130,7 +130,7 @@ export default function Search() {
                         <br />
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="cook_time" className="block mb-2 text-sm font-medium">
+                                <label htmlFor="cook_time" className="block mb-2 text-sm font-medium text-zinc-950 dark:text-white">
                                     Target Cook Time: {cookTime} minutes
                                 </label>
                                 <input
@@ -144,7 +144,7 @@ export default function Search() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="complexity_score" className="block mb-2 text-sm font-medium">
+                                <label htmlFor="complexity_score" className="block mb-2 text-sm font-medium text-zinc-950 dark:text-white">
                                     Target Complexity Score: {complexityScore}
                                 </label>
                                 <input
@@ -158,7 +158,7 @@ export default function Search() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="number_of_ingredients" className="block mb-2 text-sm font-medium">
+                                <label htmlFor="number_of_ingredients" className="block mb-2 text-sm font-medium text-zinc-950 dark:text-white">
                                     Target Number of Ingredients: {numberOfIngredients}
                                 </label>
                                 <input

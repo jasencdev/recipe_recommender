@@ -227,13 +227,13 @@ export default function Collections() {
                     <Card className="p-4">
                         <Strong>Total Collections</Strong>
                         <div className="text-2xl font-bold mt-2">{collections.length}</div>
-                        <Text className="text-sm text-gray-600">Recipe groups</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">Recipe groups</Text>
                     </Card>
 
                     <Card className="p-4">
                         <Strong>Total Recipes</Strong>
                         <div className="text-2xl font-bold mt-2">{savedRecipes.length}</div>
-                        <Text className="text-sm text-gray-600">Available to organize</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">Available to organize</Text>
                     </Card>
 
                     <Card className="p-4">
@@ -241,7 +241,7 @@ export default function Collections() {
                         <div className="text-2xl font-bold mt-2">
                             {new Set(collections.flatMap(c => c.recipes.map(r => r.id))).size}
                         </div>
-                        <Text className="text-sm text-gray-600">In collections</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">In collections</Text>
                     </Card>
                 </div>
 
@@ -251,7 +251,7 @@ export default function Collections() {
                 {/* Collections Grid */}
                 {collections.length === 0 ? (
                     <div className="text-center py-12">
-                        <Text className="text-gray-500 mb-4">No collections yet.</Text>
+                        <Text className="text-gray-500 dark:text-zinc-400 mb-4">No collections yet.</Text>
                         <Button onClick={() => setShowCreateDialog(true)}>
                             Create Your First Collection
                         </Button>
@@ -265,7 +265,7 @@ export default function Collections() {
                                         <Strong>{collection.name}</Strong>
                                         <br />
                                         {collection.description && (
-                                            <Text className="text-sm text-gray-600 mt-1">
+                                            <Text className="text-sm text-gray-600 dark:text-zinc-400 mt-1">
                                                 {collection.description}
                                             </Text>
                                         )}
@@ -290,7 +290,7 @@ export default function Collections() {
 
                                 <div className="text-center mb-4">
                                     <div className="text-2xl font-bold">{collection.recipes.length}</div>
-                                    <Text className="text-sm text-gray-600">recipes</Text>
+                                    <Text className="text-sm text-gray-600 dark:text-zinc-400">recipes</Text>
                                 </div>
 
                                 {collection.recipes.length > 0 && (
@@ -309,7 +309,7 @@ export default function Collections() {
                                             </div>
                                         ))}
                                         {collection.recipes.length > 3 && (
-                                            <Text className="text-xs text-gray-500">
+                                            <Text className="text-xs text-gray-500 dark:text-zinc-400">
                                                 +{collection.recipes.length - 3} more recipes
                                             </Text>
                                         )}

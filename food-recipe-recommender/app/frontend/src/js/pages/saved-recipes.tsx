@@ -128,19 +128,19 @@ export default function SavedRecipes() {
                     <Card className="p-4">
                         <Strong>Total Saved</Strong>
                         <div className="text-2xl font-bold mt-2">{totalRecipes}</div>
-                        <Text className="text-sm text-gray-600">Recipes in your collection</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">Recipes in your collection</Text>
                     </Card>
 
                     <Card className="p-4">
                         <Strong>Collections</Strong>
                         <div className="text-2xl font-bold mt-2">{collections.filter(c => c.count > 0).length}</div>
-                        <Text className="text-sm text-gray-600">Organized groups</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">Organized groups</Text>
                     </Card>
 
                     <Card className="p-4">
                         <Strong>Showing</Strong>
                         <div className="text-2xl font-bold mt-2">{Math.min(10, totalRecipes)}</div>
-                        <Text className="text-sm text-gray-600">Recipes displayed</Text>
+                        <Text className="text-sm text-gray-600 dark:text-zinc-400">Recipes displayed</Text>
                     </Card>
                 </div>
 
@@ -179,7 +179,7 @@ export default function SavedRecipes() {
 
                 {savedRecipes.length === 0 ? (
                     <div className="text-center py-12">
-                        <Text className="text-gray-500 mb-4">You haven't saved any recipes yet.</Text>
+                        <Text className="text-gray-500 dark:text-zinc-400 mb-4">You haven't saved any recipes yet.</Text>
                         <Button onClick={handleAddNewRecipe}>Find Recipes to Save</Button>
                     </div>
                 ) : (
@@ -201,7 +201,7 @@ export default function SavedRecipes() {
                                             <TableCell className="max-w-[250px]">
                                                 <div>
                                                     <Strong className="block truncate">{recipe.name}</Strong>
-                                                    <Text className="text-sm text-gray-600 line-clamp-2">{recipe.description}</Text>
+                                                    <Text className="text-sm text-gray-600 dark:text-zinc-400 line-clamp-2">{recipe.description}</Text>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">{recipe.cookTime} min</TableCell>

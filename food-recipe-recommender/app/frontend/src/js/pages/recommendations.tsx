@@ -155,7 +155,7 @@ export default function Recommendations() {
                 <div className="text-center py-12">
                     <Heading>No Search Results</Heading>
                     <br />
-                    <Text className="text-gray-500 mb-4">Start by searching for recipes.</Text>
+                    <Text className="text-gray-500 dark:text-zinc-400 mb-4">Start by searching for recipes.</Text>
                     <Button onClick={handleNewSearch}>Go to Search</Button>
                 </div>
             </StackedWrapper>
@@ -210,7 +210,7 @@ export default function Recommendations() {
 
                 {recipes.length === 0 ? (
                     <div className="text-center py-12">
-                        <Text className="text-gray-500 mb-4">No recipes found matching your search.</Text>
+                        <Text className="text-gray-500 dark:text-zinc-400 mb-4">No recipes found matching your search.</Text>
                         <Button onClick={handleNewSearch}>Try a Different Search</Button>
                     </div>
                 ) : (
@@ -241,12 +241,12 @@ export default function Recommendations() {
                                         </div>
                                     </div>
 
-                                    <Text className="text-sm text-gray-600 line-clamp-2 mb-4">
+                                    <Text className="text-sm text-gray-600 dark:text-zinc-400 line-clamp-2 mb-4">
                                         {recipe.description}
                                     </Text>
 
                                     {/* Recipe Stats */}
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-zinc-400 mb-4">
                                         <div className="flex items-center gap-1">
                                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -283,7 +283,7 @@ export default function Recommendations() {
                                     )}
 
                                     <div className="flex gap-2 items-center">
-                                        <Text className="text-sm text-gray-500 flex-1">Click to view recipe</Text>
+                                        <Text className="text-sm text-gray-500 dark:text-zinc-400 flex-1">Click to view recipe</Text>
                                         <SaveButton
                                             recipeId={recipe.id}
                                             size="sm"
@@ -356,7 +356,7 @@ export default function Recommendations() {
 
                         {/* Results Summary */}
                         <div className="text-center mt-6">
-                            <Text className="text-sm text-gray-600">
+                            <Text className="text-sm text-gray-600 dark:text-zinc-400">
                                 Showing {(currentPage - 1) * recipesPerPage + 1}-{Math.min(currentPage * recipesPerPage, recipes.length)} of {recipes.length} recipes
                                 {totalRecipes > recipes.length && ` (${totalRecipes} total available)`}
                             </Text>

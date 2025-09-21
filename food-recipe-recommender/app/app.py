@@ -161,12 +161,15 @@ def register():
     if not email or not password or not full_name:
         return jsonify({'success': False, 'message': 'Email, password, and full name are required'}), 400
     
-    # Check if user already exists
-    if User.query.filter_by(email_address=email).first():
-        return jsonify({'success': False, 'message': 'Email already registered'}), 400
-    
     # Create new user
     try:
+        # Ensure DB schema exists (useful with SQLite fallback)
+        db.create_all()
+
+        # Check if user already exists
+        if User.query.filter_by(email_address=email).first():
+            return jsonify({'success': False, 'message': 'Email already registered'}), 400
+
         user = User(
             email_address=email,
             full_name=full_name,
@@ -1007,11 +1010,45 @@ def home():
 def login_page():
     return render_template("index.html")
 
+# Catch-all route for SPA - handles all frontend routes like /registration, /dashboard, etc.
+@app.route('/<path:path>')
+def spa_routes(path):
+    # Only serve SPA for non-API routes
+    if not path.startswith('api/'):
+        return render_template("index.html")
+    # Let Flask handle 404 for unknown API routes
+    return jsonify({'error': 'Not found'}), 404
+
 # Serve Vite-built assets at /assets/* (copied to static/assets in container)
 @app.route('/assets/<path:filename>')
 def vite_assets(filename):
     assets_dir = os.path.join(app.root_path, 'static', 'assets')
     return send_from_directory(assets_dir, filename)
+
+# Return JSON for API 500 errors so the frontend doesn't try to parse HTML
+@app.errorhandler(500)
+def api_json_500(e):
+    p = request.path or ''
+    if p.startswith('/api'):
+        return jsonify({'error': 'Internal server error'}), 500
+    return e
+
+# SPA fallback: serve index.html for any non-API, non-static path
+@app.errorhandler(404)
+def spa_fallback(e):
+    path = request.path.lstrip('/')
+    # Let API and static 404s pass through
+    if path.startswith('api') or path.startswith('assets') or path.startswith('static'):
+        return e
+    # Serve SPA index for client routes like /registration, /recommendations, etc.
+    return render_template('index.html')
+
+# Ensure database tables exist at import time (safe and idempotent for SQLite/dev)
+try:
+    with app.app_context():
+        db.create_all()
+except Exception:
+    pass
 
 # Entry point: ensure all routes are registered before running the app
 if __name__ == "__main__":

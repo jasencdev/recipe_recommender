@@ -160,7 +160,7 @@ export default function RecipeDetail() {
                 <div className="text-center py-12">
                     <Heading>Recipe Not Found</Heading>
                     <br />
-                    <Text className="text-gray-500 mb-4">
+                    <Text className="text-gray-500 dark:text-zinc-400 mb-4">
                         {error || 'The recipe you\'re looking for could not be found.'}
                     </Text>
                     <Button onClick={handleBack}>Go Back</Button>
@@ -176,7 +176,7 @@ export default function RecipeDetail() {
                     <div className="flex-1">
                         <Heading>{recipe.name}</Heading>
                         <br />
-                        <Text className="text-gray-600">{recipe.description}</Text>
+                        <Text className="text-gray-600 dark:text-zinc-400">{recipe.description}</Text>
                     </div>
                     <div className="flex gap-2 ml-4">
                         <Button onClick={handleBack} color="gray">
@@ -348,13 +348,13 @@ export default function RecipeDetail() {
                             ) : userNote ? (
                                 <div className="bg-gray-50 p-3 rounded-lg">
                                     <Text className="whitespace-pre-wrap">{userNote.note}</Text>
-                                    <Text className="text-xs text-gray-500 mt-2">
+                                    <Text className="text-xs text-gray-500 dark:text-zinc-400 mt-2">
                                         Updated {userNote.updatedAt.toLocaleDateString()}
                                     </Text>
                                 </div>
                             ) : (
                                 <div className="text-center py-4">
-                                    <Text className="text-gray-500 mb-2">No notes yet</Text>
+                                    <Text className="text-gray-500 dark:text-zinc-400 mb-2">No notes yet</Text>
                                     <Button size="sm" color="gray" onClick={() => setIsEditingNote(true)}>
                                         Add Note
                                     </Button>
@@ -386,7 +386,7 @@ export default function RecipeDetail() {
                                                     {formatIngredient(ingredient)}
                                                 </span>
                                                 {ingredient.preparation && (
-                                                    <div className="text-sm text-gray-600 mt-1">
+                                                    <div className="text-sm text-gray-600 dark:text-zinc-400 mt-1">
                                                         Preparation: {ingredient.preparation}
                                                     </div>
                                                 )}
