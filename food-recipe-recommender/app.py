@@ -4,6 +4,7 @@ import ast
 from pathlib import Path
 import streamlit as st
 import joblib
+from src.config import MODELS_RELATIVE_MODEL_PATH
 
 
 def load_model():
@@ -14,7 +15,7 @@ def load_model():
     :return: Loaded model object, or None if not found.
     """
     base_dir = Path(__file__).resolve().parent
-    model_path = (base_dir / "./models" / "recipe_recommender_model.joblib").resolve()
+    model_path = (base_dir / MODELS_RELATIVE_MODEL_PATH).resolve()
 
     try:
         # Attempt to load the model
@@ -43,19 +44,21 @@ def main():
     with st.sidebar:
         # Search functionality - moved to top
         st.write("**Search Recipes:**")
-        search_query = st.text_input("Search by recipe name or ingredient:", key="search_input")
-        
+        search_query = st.text_input(
+            "Search by recipe name or ingredient:", key="search_input"
+        )
+
         if loaded_model is not None and search_query.strip():
             # Get search results
             search_results = loaded_model.search_recipes(search_query)
-            
+
             # Store search results in session state
             st.session_state["search_results"] = search_results
             st.session_state["recommendations"] = None
             st.session_state["selected_recipe"] = None
 
         st.write("---")
-        
+
         # Creating an input field for the user to enter their name
         user_name = st.text_input("Enter your name:")
 
@@ -126,7 +129,10 @@ def main():
             st.write("**Ingredients:**")
             st.write(
                 ", ".join(
-                    [ingredient.title() for ingredient in ast.literal_eval(row["ingredients"])]
+                    [
+                        ingredient.title()
+                        for ingredient in ast.literal_eval(row["ingredients"])
+                    ]
                 )
             )
             st.write("**Steps:**")
@@ -153,7 +159,10 @@ def main():
                 st.write("**Ingredients:**")
                 st.write(
                     ", ".join(
-                        [ingredient.title() for ingredient in ast.literal_eval(row["ingredients"])]
+                        [
+                            ingredient.title()
+                            for ingredient in ast.literal_eval(row["ingredients"])
+                        ]
                     )
                 )
                 st.write("**Steps:**")
