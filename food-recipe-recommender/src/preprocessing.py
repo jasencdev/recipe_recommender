@@ -7,21 +7,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from wordcloud import WordCloud
+from .config import RAW_RECIPES_PATH, RAW_INTERACTIONS_PATH
+
 
 def load_data():
     """Module for loading data"""
 
-    # Build the absolute file path
-    base_dir = Path.cwd()
-
-    # recipes_data_path = os.path.join(base_dir, '../data/RAW_recipes.csv')
-    # interactions_data_path = os.path.join(base_dir, '../data/RAW_interactions.csv')
-    recipes_data_path = (
-        base_dir / "food-recipe-recommender" / "data" / "RAW_recipes.csv"
-    ).resolve()
-    interactions_data_path = (
-        base_dir / "food-recipe-recommender" / "data" / "RAW_interactions.csv"
-    ).resolve()
+    # Build the absolute file path using centralized configuration
+    recipes_data_path = RAW_RECIPES_PATH.resolve()
+    interactions_data_path = RAW_INTERACTIONS_PATH.resolve()
 
     # Load the dataset
     recipes = pd.read_csv(recipes_data_path)
@@ -63,63 +57,72 @@ def plot_preparation_time(recipes):
     Plots histogram of preparation time
     """
 
-    plt.hist(recipes['minutes'], bins=18, edgecolor='blue')
-    plt.title('Distribution of Preparation Time (minutes)')
-    plt.xlabel('Preparation Time (minutes)')
-    plt.ylabel('Frequency')
+    plt.hist(recipes["minutes"], bins=18, edgecolor="blue")
+    plt.title("Distribution of Preparation Time (minutes)")
+    plt.xlabel("Preparation Time (minutes)")
+    plt.ylabel("Frequency")
     plt.show()
+
 
 def plot_ratings_distribution(interactions):
     """
     Plots the distribution of ratings for recipes.
     """
-    plt.hist(interactions['rating'], bins=5, edgecolor='blue', align='mid')
-    plt.title('Distribution of Ratings')
-    plt.xlabel('Ratings (1 to 5)')
-    plt.ylabel('Frequency')
+    plt.hist(interactions["rating"], bins=5, edgecolor="blue", align="mid")
+    plt.title("Distribution of Ratings")
+    plt.xlabel("Ratings (1 to 5)")
+    plt.ylabel("Frequency")
     plt.xticks(range(1, 6))
     plt.show()
+
 
 def plot_ingredients_distribution(recipes):
     """
     Plots the histogram of the number of ingredients in recipes.
     """
-    plt.hist(recipes['n_ingredients'], bins=20, edgecolor='blue')
-    plt.title('Distribution of Number of Ingredients')
-    plt.xlabel('Number of Ingredients')
-    plt.ylabel('Frequency')
+    plt.hist(recipes["n_ingredients"], bins=20, edgecolor="blue")
+    plt.title("Distribution of Number of Ingredients")
+    plt.xlabel("Number of Ingredients")
+    plt.ylabel("Frequency")
     plt.show()
+
 
 def plot_correlation_heatmap(recipes):
     """
     Plots a heatmap showing correlations between numeric features.
     """
-    numeric_features = ['minutes', 'n_steps', 'n_ingredients']
+    numeric_features = ["minutes", "n_steps", "n_ingredients"]
     corr_matrix = recipes[numeric_features].corr()
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
-    plt.title('Correlation Heatmap of Recipe Features')
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f")
+    plt.title("Correlation Heatmap of Recipe Features")
     plt.show()
+
 
 def plot_review_sentiment(interactions):
     """
     Creates a word cloud from review text in the interactions dataset.
     """
-    review_text = ' '.join(interactions['review'].dropna())
-    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(review_text)
+    review_text = " ".join(interactions["review"].dropna())
+    wordcloud = WordCloud(width=800, height=400, background_color="white").generate(
+        review_text
+    )
 
     plt.figure(figsize=(10, 6))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')
-    plt.title('Word Cloud of Recipe Reviews')
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.title("Word Cloud of Recipe Reviews")
     plt.show()
+
 
 def plot_prep_time_vs_ingredients(recipes):
     """Plot preparation time against number of ingredients"""
 
     # Assuming 'ingredients' column is a list of ingredients
-    recipes["num_ingredients"] = recipes["ingredients"].apply(lambda x: len(ast.literal_eval(x)))
+    recipes["num_ingredients"] = recipes["ingredients"].apply(
+        lambda x: len(ast.literal_eval(x))
+    )
 
     plt.figure(figsize=(10, 6))
     plt.scatter(recipes["minutes"], recipes["num_ingredients"], alpha=0.5)
@@ -152,6 +155,7 @@ def plot_most_used_ingredients(recipes, top_n=10):
     plt.gca().invert_yaxis()  # Invert y-axis to have the most common ingredient at the top
     plt.show()
 
+
 def preprocess_data(recipes, interactions):
     """Clean up the data for usability"""
 
@@ -164,8 +168,7 @@ def preprocess_data(recipes, interactions):
     # - Keep only recipes with <= 20 ingredients
     # - Keep only recipes with preparation time <= 60 minutes
     recipes_filtered = recipes_cleaned.loc[
-        (recipes_cleaned["num_ingredients"] <= 20) &
-        (recipes_cleaned["minutes"] <= 60)
+        (recipes_cleaned["num_ingredients"] <= 20) & (recipes_cleaned["minutes"] <= 60)
     ]
 
     print(f"Original dataset size: {recipes_cleaned.shape[0]} recipes")
