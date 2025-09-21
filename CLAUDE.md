@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `make test-cov` - Backend tests with coverage
 - `make test-frontend` - Frontend tests (watch)
 - `make test-frontend-cov` - Frontend tests with coverage
-- `make test-live` - Live integration tests (override API with `make test-live API=http://localhost:5000/api`)
+- `make test-live` - Live integration tests (override API with `make test-live API=http://localhost:8080/api`)
 
 ### Build and Development
 - Frontend build: `cd food-recipe-recommender/app/frontend && npm run build`

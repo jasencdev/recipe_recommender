@@ -16,9 +16,9 @@ test-frontend-cov:
 
 # Live integration against a running backend
 # Usage:
-#   make test-live                 # uses default API_BASE_URL (http://127.0.0.1:5000/api)
-#   make test-live API=http://localhost:5000/api
-API ?= http://127.0.0.1:5000/api
+#   make test-live                 # uses default API_BASE_URL (http://127.0.0.1:8080/api)
+#   make test-live API=http://localhost:8080/api
+API ?= http://127.0.0.1:8080/api
 test-live:
 	LIVE_API=1 API_BASE_URL=$(API) uv run pytest -q -p no:cacheprovider tests/test_integration_live.py
 
