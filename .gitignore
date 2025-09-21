@@ -11,3 +11,7 @@ database.db
 food-recipe-recommender/app/.env
 food-recipe-recommender/app/.env
 data
+htmlcov/
+.coverage
+coverage.xml
+food-recipe-recommender/app/.coverage
