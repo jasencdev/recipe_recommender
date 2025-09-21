@@ -9,6 +9,7 @@ import Card from '../components/card'
 import { Field, Label } from "../components/fieldset";
 import { type Recipe, searchRecipes, type SearchFilters } from "../services/api";
 import SaveButton from "../components/saveButton";
+import { useToast } from "../components/toast";
 
 type SortOption = 'relevance' | 'cookTime' | 'difficulty' | 'name';
 
@@ -26,6 +27,7 @@ export default function Recommendations() {
     const [recipesPerPage] = useState(12);
     const [totalRecipes, setTotalRecipes] = useState(0);
     const [hasMore, setHasMore] = useState(false);
+    const toast = useToast();
 
     useEffect(() => {
         // Try to get search results from location state first (fresh search)
@@ -132,7 +134,9 @@ export default function Recommendations() {
                 }
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load more results');
+            const msg = err instanceof Error ? err.message : 'Failed to load more results';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }

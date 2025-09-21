@@ -8,10 +8,12 @@ import { Heading } from "../components/heading";
 import { Strong, Text } from "../components/text";
 import { Divider } from '../components/divider'
 import { searchRecipes, type SearchFilters } from "../services/api";
+import { useToast } from "../components/toast";
 // Removed recently viewed cards and images
 
 export default function Search() {
     const navigate = useNavigate();
+    const toast = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [complexityScore, setComplexityScore] = useState(24);
     const [numberOfIngredients, setNumberOfIngredients] = useState(10);
@@ -23,7 +25,10 @@ export default function Search() {
 
     const handleTextSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!searchQuery.trim()) return;
+        if (!searchQuery.trim()) {
+            toast.warning('Please enter a search term');
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -31,6 +36,9 @@ export default function Search() {
         try {
             const filters: SearchFilters = { query: searchQuery.trim() };
             const response = await searchRecipes(filters);
+            if (!response.recipes?.length) {
+                toast.info('No recipes found for your search');
+            }
             // Navigate to recommendations page with results
             navigate('/recommendations', {
                 state: {
@@ -42,7 +50,9 @@ export default function Search() {
                 }
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to search recipes');
+            const msg = err instanceof Error ? err.message : 'Failed to search recipes';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }
@@ -60,6 +70,9 @@ export default function Search() {
                 cookTime,
             };
             const response = await searchRecipes(filters);
+            if (!response.recipes?.length) {
+                toast.info('No recipes found with these parameters');
+            }
             // Navigate to recommendations page with results
             navigate('/recommendations', {
                 state: {
@@ -71,7 +84,9 @@ export default function Search() {
                 }
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to search recipes');
+            const msg = err instanceof Error ? err.message : 'Failed to search recipes';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }

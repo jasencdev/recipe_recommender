@@ -5,8 +5,10 @@ import { Field, Label } from '../components/fieldset'
 import { Heading } from '../components/heading'
 import { Input } from '../components/input'
 import { Strong, Text, TextLink } from '../components/text'
+import { useToast } from '../components/toast'
 
 export default function LoginPage() {
+    const toast = useToast();
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
@@ -27,7 +29,10 @@ export default function LoginPage() {
 
     const result = await response.json()
     if (result.success) {
+      toast.success('Logged in successfully')
       window.location.href = '/'
+    } else {
+      toast.error(result.message || 'Invalid credentials')
     }
   }
   

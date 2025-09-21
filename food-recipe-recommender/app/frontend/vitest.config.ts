@@ -5,6 +5,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
+    deps: {
+      inline: ['react-router', 'react-router-dom'],
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
@@ -20,4 +23,3 @@ export default defineConfig({
     }
   }
 })
-

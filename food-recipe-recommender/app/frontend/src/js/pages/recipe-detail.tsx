@@ -22,6 +22,7 @@ import {
     type EnrichedIngredients,
     type ParsedIngredient
 } from "../services/ingredients";
+import { useToast } from "../components/toast";
 
 export default function RecipeDetail() {
     const { id } = useParams<{ id: string }>();
@@ -35,6 +36,7 @@ export default function RecipeDetail() {
     const [isEditingNote, setIsEditingNote] = useState(false);
     const [enrichedIngredients, setEnrichedIngredients] = useState<EnrichedIngredients | null>(null);
     const [scaledIngredients, setScaledIngredients] = useState<ParsedIngredient[]>([]);
+    const toast = useToast();
 
     useEffect(() => {
         if (id) {
@@ -61,7 +63,9 @@ export default function RecipeDetail() {
             // Load enriched ingredients
             loadEnrichedIngredients(recipeId);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load recipe');
+            const msg = err instanceof Error ? err.message : 'Failed to load recipe';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }
@@ -78,6 +82,7 @@ export default function RecipeDetail() {
             }
         } catch (err) {
             console.error('Failed to load enriched ingredients:', err);
+            toast.info('Showing basic ingredients');
             // Continue without enriched ingredients - fallback to basic ingredients
         }
     };
@@ -115,8 +120,10 @@ export default function RecipeDetail() {
             const updatedNote = getRecipeNote(recipe.id);
             setUserNote(updatedNote);
             setIsEditingNote(false);
+            toast.success('Note saved');
         } catch (err) {
             setError('Failed to save note');
+            toast.error('Failed to save note');
         }
     };
 
@@ -128,8 +135,10 @@ export default function RecipeDetail() {
             setUserNote(null);
             setNoteText("");
             setIsEditingNote(false);
+            toast.info('Note deleted');
         } catch (err) {
             setError('Failed to delete note');
+            toast.error('Failed to delete note');
         }
     };
 

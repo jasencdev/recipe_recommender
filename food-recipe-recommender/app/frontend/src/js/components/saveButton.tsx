@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './button';
 import { isRecipeSaved, toggleSaveRecipe } from '../services/api';
+import { useToast } from './toast';
 
 interface SaveButtonProps {
     recipeId: string;
@@ -22,6 +23,7 @@ export default function SaveButton({
     const [isSaved, setIsSaved] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isToggling, setIsToggling] = useState(false);
+    const toast = useToast();
 
     useEffect(() => {
         const checkSaveStatus = async () => {
@@ -51,8 +53,14 @@ export default function SaveButton({
             const newSavedState = await toggleSaveRecipe(recipeId);
             setIsSaved(newSavedState);
             onSaveChange?.(newSavedState);
+            if (newSavedState) {
+                toast.success('Recipe saved to favorites');
+            } else {
+                toast.info('Recipe removed from favorites');
+            }
         } catch (error) {
             console.error('Failed to toggle save state:', error);
+            toast.error('Failed to update saved state');
         } finally {
             setIsToggling(false);
         }

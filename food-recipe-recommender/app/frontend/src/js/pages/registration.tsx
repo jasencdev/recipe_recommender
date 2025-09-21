@@ -6,8 +6,10 @@ import { Heading } from '../components/heading'
 import { Input } from '../components/input'
 import { Select } from '../components/select'
 import { Strong, Text, TextLink } from '../components/text'
+import { useToast } from '../components/toast'
 
 export default function Registration() {
+  const toast = useToast()
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
@@ -30,7 +32,10 @@ export default function Registration() {
 
     const result = await response.json()
     if (result.success) {
+      toast.success('Account created')
       window.location.href = '/'
+    } else {
+      toast.error(result.message || 'Registration failed')
     }
   }
 

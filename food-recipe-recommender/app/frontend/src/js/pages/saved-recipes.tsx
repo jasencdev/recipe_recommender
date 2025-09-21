@@ -9,9 +9,11 @@ import Card from '../components/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/table'
 import { getSavedRecipes, removeSavedRecipe, getRecipeById, type Recipe } from "../services/api";
 import logger from "../utils/logger";
+import { useToast } from "../components/toast";
 
 export default function SavedRecipes() {
     const navigate = useNavigate();
+    const toast = useToast();
     const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,9 @@ export default function SavedRecipes() {
 
             setSavedRecipes(validRecipes);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load saved recipes');
+            const msg = err instanceof Error ? err.message : 'Failed to load saved recipes';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }
@@ -57,7 +61,9 @@ export default function SavedRecipes() {
             await removeSavedRecipe(recipeId);
             setSavedRecipes(prev => prev.filter(recipe => recipe.id !== recipeId));
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to remove recipe');
+            const msg = err instanceof Error ? err.message : 'Failed to remove recipe';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setRemovingRecipeId(null);
         }
