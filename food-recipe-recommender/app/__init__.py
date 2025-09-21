@@ -9,8 +9,28 @@ from sqlalchemy.engine.url import make_url
 from dotenv import load_dotenv
 from typing import Optional
 
+# Internal singletons/flags to avoid repeated heavy loads
+_RECOMMENDER_SINGLETON = None  # type: ignore[var-annotated]
+_MODEL_PATH_PREPARED = False
+
 db = SQLAlchemy()
 login_manager = LoginManager()
+
+
+def _prepare_model_imports(app_logger: logging.Logger) -> None:
+    global _MODEL_PATH_PREPARED
+    if _MODEL_PATH_PREPARED:
+        return
+    try:
+        import sys as _sys
+        base_dir = os.path.dirname(__file__)
+        data_pipeline_dir = os.path.abspath(os.path.join(base_dir, '..', 'data-pipeline'))
+        if data_pipeline_dir not in _sys.path:
+            _sys.path.append(data_pipeline_dir)
+            app_logger.info("[startup] sys.path += %s", data_pipeline_dir)
+    except Exception:
+        pass
+    _MODEL_PATH_PREPARED = True
 
 
 def create_app() -> Flask:
@@ -57,16 +77,30 @@ def create_app() -> Flask:
     # Database URL with fallback
     _db_url_env = (os.getenv('DATABASE_URL') or '').strip()
     if not _db_url_env:
-        _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'database.db')
-        os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+        # Prefer a persistent directory if present (e.g., Railway volume mounted at /data)
+        persistent_dir = (os.getenv('SQLITE_DIR') or '').strip() or ('/data' if os.path.isdir('/data') else '')
+        if persistent_dir:
+            _db_path = os.path.join(persistent_dir, 'database.db')
+        else:
+            _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'database.db')
+        try:
+            os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+        except Exception:
+            pass
         _db_url = f'sqlite:///{_db_path}'
+        # Warn if likely ephemeral storage in production
+        if app.config.get('ENVIRONMENT') == 'production' and not persistent_dir:
+            logging.getLogger('app').warning('[startup] Using SQLite fallback at %s; data will be ephemeral. Set DATABASE_URL or SQLITE_DIR (e.g., /data with a persistent volume).', _db_path)
     else:
         try:
             make_url(_db_url_env)
             _db_url = _db_url_env
         except Exception:
             _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'database.db')
-            os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+            try:
+                os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+            except Exception:
+                pass
             _db_url = f'sqlite:///{_db_path}'
     app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 
@@ -75,22 +109,19 @@ def create_app() -> Flask:
     login_manager.init_app(app)
     login_manager.login_view = '/login'
 
-    # Load recommender model (supports override via MODEL_PATH)
+    # Load recommender model (supports override via MODEL_PATH) with singleton cache
+    global _RECOMMENDER_SINGLETON
     try:
+        _prepare_model_imports(app_logger)
         base_dir = os.path.dirname(__file__)
-        # Ensure pickled module imports (e.g., "modules.*") resolve by adding data-pipeline to sys.path
-        try:
-            import sys as _sys
-            data_pipeline_dir = os.path.abspath(os.path.join(base_dir, '..', 'data-pipeline'))
-            if data_pipeline_dir not in _sys.path:
-                _sys.path.append(data_pipeline_dir)
-                app_logger.info("[startup] sys.path += %s", data_pipeline_dir)
-        except Exception:
-            pass
         model_path = os.getenv('MODEL_PATH') or os.path.abspath(os.path.join(base_dir, '..', 'models', 'recipe_recommender_model.joblib'))
-        app_logger.info("[startup] loading recommender | path=%s", model_path)
-        app.config['RECOMMENDER'] = joblib.load(model_path)
-        app_logger.info("[startup] recommender loaded")
+        if _RECOMMENDER_SINGLETON is None:
+            app_logger.info("[startup] loading recommender | path=%s", model_path)
+            _RECOMMENDER_SINGLETON = joblib.load(model_path)
+            app_logger.info("[startup] recommender loaded")
+        else:
+            app_logger.info("[startup] recommender cached; reusing singleton")
+        app.config['RECOMMENDER'] = _RECOMMENDER_SINGLETON
     except Exception as _e:
         app_logger.warning("[startup] recommender unavailable | reason=%s", getattr(_e, 'args', _e))
         app.config['RECOMMENDER'] = None
@@ -283,5 +314,6 @@ def send_password_reset_email(to_email: str, token: str) -> bool:
         return False
 
 
-# Create a default app instance to preserve legacy imports: from app import app
-app = create_app()
+# Create a default app instance to preserve legacy imports only in test/CI
+if os.getenv('ENV', 'development').lower() in {'test', 'ci'}:
+    app = create_app()  # type: ignore[assignment]

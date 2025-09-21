@@ -11,6 +11,9 @@
   - Model: ensure `food-recipe-recommender/models/recipe_recommender_model.joblib` exists in the repo before building.
     - Alternatively, mount and override path:
       `docker run -p 8080:8080 -e PORT=8080 -e MODEL_PATH=/models/model.joblib -v /abs/path/to/model.joblib:/models/model.joblib:ro IMAGE:TAG`
+  - Database persistence on Railway:
+    - Recommended: attach a PostgreSQL service and set `DATABASE_URL`.
+    - Or attach a Volume mounted at `/data` and set `SQLITE_DIR=/data` to persist SQLite across deploys.
 
 - Admin endpoints (require `X-Admin-Token`):
   - Status: `GET /api/admin/status/email`

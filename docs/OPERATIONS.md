@@ -8,6 +8,8 @@ Environment variables
 - ADMIN_TOKEN: Shared secret required in `X-Admin-Token` header for admin endpoints.
 - RATE_LIMIT_PER_IP_PER_HOUR: Default 5; used for forgot-password IP throttling.
 - RATE_LIMIT_PER_EMAIL_PER_HOUR: Default 3; used for per-email throttling.
+ - DATABASE_URL: Preferred. Use a managed Postgres URL in production.
+ - SQLITE_DIR: Optional. Directory for a persistent SQLite file (e.g., `/data` on Railway volume). If unset and DATABASE_URL is empty, the app uses an in-container SQLite file (ephemeral).
 
 Starting the server
 - Local: `uv run flask --app app:create_app run --port 8080`
@@ -18,6 +20,11 @@ Model artifact
 - Expected path in image: `/app/food-recipe-recommender/models/recipe_recommender_model.joblib`.
 - Ensure the file exists under `food-recipe-recommender/models/` before building.
 - To mount a model at runtime, set `MODEL_PATH=/models/model.joblib` and bind mount the file into the container.
+
+Database persistence (Railway)
+- Recommended: Add a PostgreSQL service in Railway and set `DATABASE_URL` on the app.
+- Alternative: Create a Railway Volume and mount at `/data`. Set `SQLITE_DIR=/data` on the app. The app will create `/data/database.db` and persist across deploys.
+- Warning: If neither `DATABASE_URL` nor `SQLITE_DIR` is set, the app uses an in-container SQLite file which is reset on each deploy.
 
 Admin endpoints
 - GET `/api/admin/status/email`
