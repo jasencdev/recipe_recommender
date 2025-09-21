@@ -3,10 +3,11 @@ import os
 import joblib
 import json
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, session
+from flask import Flask, render_template, jsonify, request, session, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.engine.url import make_url
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
@@ -17,7 +18,24 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') # Change this to a random secret key in production
 CORS(app, supports_credentials=True)  # Allow cookies in CORS requests
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# Resolve SQLALCHEMY_DATABASE_URI with safe fallback
+_db_url_env = (os.getenv('DATABASE_URL') or '').strip()
+if not _db_url_env:
+    # Default to a local SQLite file inside the app instance directory
+    _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'database.db')
+    os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+    _db_url = f'sqlite:///{_db_path}'
+else:
+    try:
+        # Validate URL; if invalid, fall back to SQLite file
+        make_url(_db_url_env)
+        _db_url = _db_url_env
+    except Exception:
+        _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'database.db')
+        os.makedirs(os.path.dirname(_db_path), exist_ok=True)
+        _db_url = f'sqlite:///{_db_path}'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 db = SQLAlchemy(app)
 
 # Email / Resend configuration and logging
@@ -988,6 +1006,12 @@ def home():
 @app.route('/login')
 def login_page():
     return render_template("index.html")
+
+# Serve Vite-built assets at /assets/* (copied to static/assets in container)
+@app.route('/assets/<path:filename>')
+def vite_assets(filename):
+    assets_dir = os.path.join(app.root_path, 'static', 'assets')
+    return send_from_directory(assets_dir, filename)
 
 # Entry point: ensure all routes are registered before running the app
 if __name__ == "__main__":

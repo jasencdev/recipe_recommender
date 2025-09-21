@@ -27,7 +27,7 @@ COPY food-recipe-recommender ./food-recipe-recommender
 
 # Install uv and Python deps into system site-packages
 RUN pip install --no-cache-dir uv \
-    && uv pip install --system -e .
+    && uv sync
 
 # Copy built frontend into Flask templates/static
 COPY --from=frontend-build /app/frontend/dist/index.html /app/food-recipe-recommender/app/templates/index.html
