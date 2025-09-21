@@ -11,6 +11,7 @@ Environment variables
 
 Starting the server
 - Local: `uv run flask --app app:create_app run --port 8080`
+- Waitress (factory): `uv run waitress-serve --listen=127.0.0.1:8080 --call 'app:create_app'`
 - Docker: `make docker-build && make docker-run`
 
 Admin endpoints
@@ -37,4 +38,3 @@ Resend checklist
 Troubleshooting
 - Check server logs for `[reset-email] sent via Resend` or failure messages.
 - Use `/api/admin/test-email` to bypass user existence checks and verify connectivity/config.
-

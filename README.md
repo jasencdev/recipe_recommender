@@ -2,12 +2,12 @@
 
 - Development (factory):
   - From `food-recipe-recommender/app`: `uv run flask --app app:create_app run --port 8080`
-  - The WSGI app is `app:create_app()`; legacy `app:app` is a shim.
+  - The WSGI app is `app:create_app`; use `--call` with Waitress/Gunicorn factory modes.
 
 - Docker:
   - Build: `make docker-build`
   - Run: `make docker-run` (loads `food-recipe-recommender/app/.env` if present)
-  - Container entrypoint serves `'app:create_app()'` via Waitress.
+  - Container entrypoint serves `--call 'app:create_app'` via Waitress.
 
 - Admin endpoints (require `X-Admin-Token`):
   - Status: `GET /api/admin/status/email`
