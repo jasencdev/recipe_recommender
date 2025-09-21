@@ -10,6 +10,12 @@ recipes_bp = Blueprint('recipes', __name__)
 def search() -> Tuple[Response, int]:
     recommender = current_app.config.get('RECOMMENDER')
     if not recommender:
+        try:
+            import app as app_module  # type: ignore
+            recommender = getattr(app_module, 'recipe_recommender', None)
+        except Exception:
+            recommender = None
+    if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
 
     query = request.args.get('query', '').strip()
@@ -88,6 +94,12 @@ def search() -> Tuple[Response, int]:
 def get_recipe(recipe_id: str) -> Tuple[Response, int]:
     recommender = current_app.config.get('RECOMMENDER')
     if not recommender:
+        try:
+            import app as app_module  # type: ignore
+            recommender = getattr(app_module, 'recipe_recommender', None)
+        except Exception:
+            recommender = None
+    if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
     try:
         data = recommender.data
@@ -144,6 +156,12 @@ def get_recipe(recipe_id: str) -> Tuple[Response, int]:
 @recipes_bp.get('/api/recipes/<recipe_id>/enriched-ingredients')
 def enriched_ingredients(recipe_id: str) -> Tuple[Response, int]:
     recommender = current_app.config.get('RECOMMENDER')
+    if not recommender:
+        try:
+            import app as app_module  # type: ignore
+            recommender = getattr(app_module, 'recipe_recommender', None)
+        except Exception:
+            recommender = None
     if not recommender:
         return jsonify({'error': 'Recipe recommendation service unavailable'}), 500
     try:
@@ -217,4 +235,3 @@ def enriched_ingredients(recipe_id: str) -> Tuple[Response, int]:
         return jsonify({'recipeId': recipe_id, 'originalIngredients': basic_ingredients, 'detailedIngredients': basic_ingredients, 'parsedIngredients': parsed_ingredients})
     except Exception as e:
         return jsonify({'error': f'Failed to get enriched ingredients: {e}'}), 500
-

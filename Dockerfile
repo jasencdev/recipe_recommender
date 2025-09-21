@@ -39,5 +39,5 @@ EXPOSE 8080
 
 WORKDIR /app/food-recipe-recommender/app
 
-# Start with Gunicorn; use shell form for env var expansion
-CMD ["sh","-c","uv run waitress-serve --listen=0.0.0.0:${PORT:-8080} app:app"]
+# Start with Waitress using the factory app
+CMD ["sh","-c","uv run waitress-serve --listen=0.0.0.0:${PORT:-8080} 'app:create_app()'"]

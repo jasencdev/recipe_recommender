@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.engine.url import make_url
 from dotenv import load_dotenv
+from typing import Optional
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -139,3 +140,135 @@ def create_app() -> Flask:
         return render_template('index.html')
 
     return app
+
+# ---------------------------------------------------------------------------------
+# Backwards-compat exports and helpers to keep legacy imports/tests working
+# ---------------------------------------------------------------------------------
+
+# Expose models at package level
+from .models import User, SavedRecipe, PasswordResetToken, PasswordResetRequestLog  # noqa: E402
+
+# Module-level env-derived constants (for legacy patches in tests)
+RESEND_API_KEY: Optional[str] = os.getenv('RESEND_API_KEY')
+EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'Recipe Recommender <no-reply@example.com>')
+FRONTEND_BASE_URL: str = os.getenv('FRONTEND_BASE_URL', 'http://localhost:5173')
+ENVIRONMENT: str = os.getenv('ENV', 'development')
+ADMIN_TOKEN: Optional[str] = os.getenv('ADMIN_TOKEN')
+
+try:
+    import resend  # type: ignore
+    if RESEND_API_KEY:
+        resend.api_key = RESEND_API_KEY
+    RESEND_AVAILABLE = True
+except Exception:  # pragma: no cover
+    resend = None  # type: ignore
+    RESEND_AVAILABLE = False
+
+# Re-export selected utils and provide legacy-named wrappers
+from .utils import parse_list_field  # noqa: E402
+from .utils import send_password_reset_email as _send_password_reset_email_impl  # noqa: E402
+from .utils import rate_limit_counts as _rate_limit_counts_impl  # noqa: E402
+
+
+def _require_admin() -> bool:
+    """Legacy-compatible admin check.
+    Accepts token if it matches any of:
+      - current_app.config['ADMIN_TOKEN'] (factory path)
+      - this module's ADMIN_TOKEN
+      - shim module's ADMIN_TOKEN (import app)
+    """
+    from flask import request, current_app as _ca
+    token = request.headers.get('X-Admin-Token')
+    # Candidate 1: app config
+    cfg_token = None
+    try:
+        cfg_token = _ca.config.get('ADMIN_TOKEN')
+    except Exception:
+        pass
+    # Candidate 2: this module
+    mod_token = ADMIN_TOKEN
+    # Candidate 3: shim module if present
+    shim_token = None
+    try:
+        import app as app_module  # type: ignore
+        shim_token = getattr(app_module, 'ADMIN_TOKEN', None)
+    except Exception:
+        pass
+    for cand in (cfg_token, mod_token, shim_token):
+        if cand and token == cand:
+            return True
+    return False
+
+
+def _rate_limit_counts(email: Optional[str], ip: Optional[str]):
+    """Legacy wrapper that binds LogModel to PasswordResetRequestLog."""
+    return _rate_limit_counts_impl(email, ip, PasswordResetRequestLog)
+
+
+def send_password_reset_email(to_email: str, token: str) -> bool:
+    """Legacy-compatible email sender that respects module-level patches.
+    Tests patch app.RESEND_API_KEY, app.RESEND_AVAILABLE, app.EMAIL_FROM, app.FRONTEND_BASE_URL,
+    and app.resend. This wrapper reads those and orchestrates the send accordingly.
+    """
+    import logging as _logging
+    from flask import current_app
+
+    logger = _logging.getLogger("password-reset")
+    try:
+        # Build content based on module-level FRONTEND_BASE_URL
+        base_url = FRONTEND_BASE_URL or current_app.config.get('FRONTEND_BASE_URL', 'http://localhost:5173')
+        reset_link = f"{base_url.rstrip('/')}/reset-password?token={token}"
+        subject = "Reset your password"
+        html = f"""
+            <div style='font-family:Arial,sans-serif;font-size:16px;color:#111'>
+              <p>Hello,</p>
+              <p>We received a request to reset your password. Click the link below to set a new password. This link expires in 1 hour.</p>
+              <p><a href='{reset_link}' style='color:#2563eb'>Reset your password</a></p>
+              <p>If you didn't request this, you can safely ignore this email.</p>
+              <p>— Recipe Recommender</p>
+            </div>
+        """
+        text = (
+            "Hello,\n\n"
+            "We received a request to reset your password. Use the link below to set a new password (expires in 1 hour).\n\n"
+            f"{reset_link}\n\n"
+            "If you didn't request this, you can ignore this email.\n\n"
+            "— Recipe Recommender\n"
+        )
+
+        # Ensure current_app.config reflects module-level patches for consistency
+        if current_app:  # pragma: no branch
+            if RESEND_API_KEY is not None:
+                current_app.config['RESEND_API_KEY'] = RESEND_API_KEY
+            if EMAIL_FROM:
+                current_app.config['EMAIL_FROM'] = EMAIL_FROM
+            if FRONTEND_BASE_URL:
+                current_app.config['FRONTEND_BASE_URL'] = FRONTEND_BASE_URL
+            current_app.config['RESEND_AVAILABLE'] = bool(RESEND_AVAILABLE)
+
+        if RESEND_API_KEY and RESEND_AVAILABLE and resend is not None:
+            try:
+                resend.api_key = RESEND_API_KEY
+                resend.Emails.send({
+                    "from": EMAIL_FROM,
+                    "to": [to_email],
+                    "subject": subject,
+                    "html": html,
+                    "text": text,
+                })
+                logger.info("[reset-email] sent via Resend | to=%s", to_email)
+                return True
+            except Exception as e:  # pragma: no cover
+                logger.exception("[reset-email] Resend send failed | to=%s | error=%s", to_email, e)
+                return False
+        else:
+            # Fall back to the utils implementation (uses current_app.config)
+            return _send_password_reset_email_impl(to_email, token)
+    except Exception:  # pragma: no cover
+        logger = _logging.getLogger("password-reset")
+        logger.exception("[reset-email] unexpected error preparing email (wrapper)")
+        return False
+
+
+# Create a default app instance to preserve legacy imports: from app import app
+app = create_app()

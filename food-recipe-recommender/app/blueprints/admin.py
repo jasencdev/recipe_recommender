@@ -1,5 +1,8 @@
 from flask import Blueprint, jsonify, request, current_app
-from ..utils import require_admin, send_password_reset_email
+from .. import _require_admin as require_admin  # use legacy-compatible admin check
+from ..utils import send_password_reset_email, rate_limit_counts
+from ..models import PasswordResetRequestLog, PasswordResetToken
+from .. import db
 import logging
 
 
@@ -41,3 +44,33 @@ def admin_test_email():
         logger.exception("[admin-test-email] error: %s", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+@admin_bp.get('/api/admin/rate-limit')
+def admin_rate_limit():
+    if not require_admin():
+        return jsonify({"error": "forbidden"}), 403
+    email = request.args.get('email')
+    ip = request.args.get('ip')
+    counts = rate_limit_counts(email, ip, PasswordResetRequestLog)
+    return jsonify({"query": {"email": email, "ip": ip}, "counts": counts})
+
+
+@admin_bp.post('/api/admin/maintenance/clear-reset-data')
+def admin_clear_reset_data():
+    if not require_admin():
+        return jsonify({"error": "forbidden"}), 403
+    try:
+        data = request.get_json(silent=True) or {}
+        days = int(data.get('days', 7))
+        from datetime import datetime, timedelta
+        cutoff = datetime.utcnow() - timedelta(days=days)
+
+        logs_deleted = PasswordResetRequestLog.query.filter(PasswordResetRequestLog.created_at < cutoff).delete()
+        tokens_deleted = PasswordResetToken.query.filter(
+            (PasswordResetToken.expires_at < cutoff) | (PasswordResetToken.created_at < cutoff)
+        ).delete()
+        db.session.commit()
+        return jsonify({"success": True, "deleted": {"logs": logs_deleted, "tokens": tokens_deleted}, "cutoff": cutoff.isoformat() + 'Z'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500

@@ -1,5 +1,5 @@
 from typing import Tuple, Dict, Any
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, current_app
 from flask_login import login_required, current_user
 from .. import db
 from ..models import SavedRecipe
@@ -33,6 +33,45 @@ def save_recipe() -> Tuple[Response, int]:
     if not recipe_id:
         return jsonify({'error': 'recipe_id cannot be empty'}), 400
     try:
+        # Validate recipe exists in model data (match monolithic behavior)
+        recommender = current_app.config.get('RECOMMENDER')
+        if not recommender:
+            try:
+                import app as app_module  # type: ignore
+                recommender = getattr(app_module, 'recipe_recommender', None)
+            except Exception:
+                recommender = None
+        if recommender and getattr(recommender, 'data', None) is not None:
+            import pandas as _pd  # type: ignore
+            data = recommender.data
+            found = False
+            try:
+                # numeric id columns
+                rid_int = int(recipe_id)
+                if 'food_recipe_id' in data.columns and not data[data['food_recipe_id'] == rid_int].empty:
+                    found = True
+                if not found and 'id' in data.columns and not data[data['id'] == rid_int].empty:
+                    found = True
+                if not found:
+                    try:
+                        found = not data.loc[[rid_int]].empty
+                    except Exception:
+                        pass
+            except Exception:
+                # string id columns
+                if 'recipe_id' in data.columns and not data[data['recipe_id'] == recipe_id].empty:
+                    found = True
+                if not found:
+                    try:
+                        if recipe_id in getattr(data, 'index', []):
+                            found = True
+                        else:
+                            found = not data.loc[[recipe_id]].empty  # type: ignore[index]
+                    except Exception:
+                        pass
+            if not found:
+                return jsonify({'error': 'Recipe not found'}), 400
+
         existing = SavedRecipe.query.filter_by(user_id=current_user.user_id, recipe_id=recipe_id).first()
         if existing:
             return jsonify({'error': 'Recipe already saved'}), 400
@@ -58,4 +97,3 @@ def remove_saved(recipe_id: str) -> Tuple[Response, int]:
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to remove saved recipe: {e}'}), 500
-
