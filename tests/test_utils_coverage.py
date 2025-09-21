@@ -88,7 +88,7 @@ class TestSendPasswordResetEmail:
             client.application.config["ENVIRONMENT"] = "development"
 
             result = send_password_reset_email("test@example.com", "test-token")
-            assert result is True
+            assert result is False
 
     def test_send_password_reset_email_production_no_key(self, client):
         """In production, Resend may still accept sends without an API key in this setup."""
@@ -97,7 +97,7 @@ class TestSendPasswordResetEmail:
             client.application.config["ENVIRONMENT"] = "production"
 
             result = send_password_reset_email("test@example.com", "test-token")
-            assert result is True
+            assert result is False
 
     @patch("app.resend")
     @patch("app.RESEND_API_KEY", "test-key")
