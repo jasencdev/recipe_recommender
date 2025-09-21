@@ -74,12 +74,15 @@ def create_app() -> Flask:
     login_manager.init_app(app)
     login_manager.login_view = '/login'
 
-    # Load recommender model if available
+    # Load recommender model (supports override via MODEL_PATH)
     try:
         base_dir = os.path.dirname(__file__)
-        model_path = os.path.abspath(os.path.join(base_dir, '..', 'models', 'recipe_recommender_model.joblib'))
+        model_path = os.getenv('MODEL_PATH') or os.path.abspath(os.path.join(base_dir, '..', 'models', 'recipe_recommender_model.joblib'))
+        app_logger.info("[startup] loading recommender | path=%s", model_path)
         app.config['RECOMMENDER'] = joblib.load(model_path)
-    except Exception:
+        app_logger.info("[startup] recommender loaded")
+    except Exception as _e:
+        app_logger.warning("[startup] recommender unavailable | reason=%s", getattr(_e, 'args', _e))
         app.config['RECOMMENDER'] = None
 
     # Models and user loader
